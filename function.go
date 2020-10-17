@@ -361,6 +361,6 @@ func (c *Lib) PanicOnErr(err error) {
 }
 
 func (c *Lib) UUID() string {
-	stUUID, _ := uuid.NewV4()
+	stUUID := uuid.NewV4()
 	return stUUID.String()
 }
