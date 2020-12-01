@@ -65,6 +65,7 @@ func (c *Lib) ResponseJSON(w http.ResponseWriter, objResponse interface{}, statu
 
 	//WriteFile("./dump.json", out)
 
+	w.WriteHeader(errMessage.Status)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(out)
 }

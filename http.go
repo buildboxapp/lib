@@ -12,10 +12,17 @@ import (
 
 // всегде возвращает результат в интерфейс + ошибка (полезно для внешних запросов с неизвестной структурой)
 // сериализуем в объект, при передаче ссылки на переменную типа
-func (c *Lib) Curl(method, urlc, bodyJSON string, response interface{}) (result interface{}, err error) {
+func (c *Lib) Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string) (result interface{}, err error) {
 	var mapValues map[string]string
 	var req *http.Request
 	client := &http.Client{}
+
+	// дополняем переданными заголовками
+	if len(headers) > 0 {
+		for k, v := range headers {
+			req.Header.Add(k, v)
+		}
+	}
 
 	// приводим к единому формату (на конце без /)
 	urlapi := c.State["url_api"]
