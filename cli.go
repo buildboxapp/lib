@@ -13,7 +13,6 @@ import (
 	"log"
 )
 
-
 // просмотр кофигурационных файлов
 func (c *Lib) Ls() (result []map[string]string) {
 
@@ -78,7 +77,6 @@ func (c *Lib) Ls() (result []map[string]string) {
 
 		}
 	}
-
 
 	fmt.Println()
 
@@ -157,9 +155,6 @@ func (c *Lib) Ps(format string) (pids []string, services map[string][][]string, 
 		}
 	}
 
-
-
-
 	// выводим структуру значений запущенных процессов
 	var k3 = []string{}
 	var wpids = []string{}
@@ -234,7 +229,6 @@ func (c *Lib) StopByConfig(config string) (err error) {
 
 	return
 }
-
 
 // завершение конкретного процесса сервиса
 // config - ид-конфигурации
@@ -318,7 +312,7 @@ func (c *Lib) Reload(pid string) (err error) {
 					pidI, err := strconv.Atoi(idProcess)
 					err = Stop(pidI)
 					if err == nil {
-						RunProcess(configfile, CurrentDir(), "buildbox",  "start","services")
+						RunProcess(configfile, CurrentDir(), "buildbox", "start", "services")
 					}
 				}
 				// сохраняем обработанный пид (чтобы повторно не релоадить)
@@ -331,7 +325,7 @@ func (c *Lib) Reload(pid string) (err error) {
 						pidI, err := strconv.Atoi(idProcess)
 						err = Stop(pidI)
 						if err == nil {
-							RunProcess(configfile, CurrentDir(), "buildbox", "start","service")
+							RunProcess(configfile, CurrentDir(), "buildbox", "start", "service")
 						}
 					}
 				}
@@ -369,7 +363,6 @@ func (c *Lib) Install() (err error) {
 	//fmt.Println(rootPath)
 	//path, _ := os.LookupEnv("BBPATH")
 	//fmt.Print("BBPATH: ", path)
-
 
 	// 2. копирование файла запуска в /etc/bin
 	//src := "./buildbox"

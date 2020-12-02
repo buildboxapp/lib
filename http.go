@@ -1,14 +1,13 @@
 package lib
 
 import (
-	"strings"
 	"encoding/json"
-	"net/url"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 )
-
 
 // всегде возвращает результат в интерфейс + ошибка (полезно для внешних запросов с неизвестной структурой)
 // сериализуем в объект, при передаче ссылки на переменную типа
@@ -64,7 +63,6 @@ func (c *Lib) Curl(method, urlc, bodyJSON string, response interface{}, headers 
 	//fmt.Println("c.State", c.State)
 	//c.Logger.Info("lib/http.go; (c *Lib) Curl; urlc " , urlc, "; bodyJSON: ", bodyJSON, "; method: ", method)
 
-
 	// если в гете мы передали еще и json (его добавляем в строку запроса)
 	// только если в запросе не указаны передаваемые параметры
 	clearUrl := strings.Contains(urlc, "?")
@@ -80,7 +78,7 @@ func (c *Lib) Curl(method, urlc, bodyJSON string, response interface{}, headers 
 	}
 
 	switch actionType {
-	case "JSONTOGET":		// преобразуем параметры в json в строку запроса
+	case "JSONTOGET": // преобразуем параметры в json в строку запроса
 		if err == nil {
 			for k, v := range mapValues {
 				values.Set(k, v)
@@ -92,7 +90,7 @@ func (c *Lib) Curl(method, urlc, bodyJSON string, response interface{}, headers 
 		} else {
 			fmt.Println("Error! Fail parsed bodyJSON from GET Curl: ", err)
 		}
-	case "JSONTOPOST":		// преобразуем параметры в json в тело запроса
+	case "JSONTOPOST": // преобразуем параметры в json в тело запроса
 
 		if err == nil {
 			for k, v := range mapValues {

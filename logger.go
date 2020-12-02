@@ -10,8 +10,8 @@ import (
 
 	stdlog "log"
 
-	"io"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -20,7 +20,7 @@ var logrusB = logrus.New()
 type Log struct {
 
 	// куда логируем? stdout/;*os.File на файл, в который будем писать логи
-	Output   		io.Writer `json:"output"`
+	Output io.Writer `json:"output"`
 	//Debug:
 	// сообщения отладки, профилирования.
 	// В production системе обычно сообщения этого уровня включаются при первоначальном
@@ -51,12 +51,11 @@ type Log struct {
 
 	//Trace: - логировать обработки запросов
 
-
 	// можно указывать через | разные уровени логирования, например Error|Warning
 	// можно указать All - логирование всех уровней
-	Levels 		string `json:"levels"`
+	Levels string `json:"levels"`
 	// uid процесса (сервиса), который логируется
-	UID 	string `json:"uid"`
+	UID string `json:"uid"`
 	// имя процесса (сервиса), который логируется
 	Name string `json:"name"`
 	// название сервиса (app/gui...)
@@ -78,7 +77,7 @@ func (c *Log) Init(logsDir, level, uid, name, srv string) {
 		return
 	}
 
-	output, err = os.OpenFile(logsDir + "/" + logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	output, err = os.OpenFile(logsDir+"/"+logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		stdlog.Fatalf("error opening file: %v", err)
 	}
@@ -99,13 +98,12 @@ func (c *Log) Trace(args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name": 	c.Name,
-			"uid":   	c.UID,
-			"srv":   	c.Service,
+			"name": c.Name,
+			"uid":  c.UID,
+			"srv":  c.Service,
 		}).Trace(args...)
 	}
 }
-
 
 func (c *Log) Debug(args ...interface{}) {
 

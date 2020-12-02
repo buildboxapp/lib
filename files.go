@@ -3,9 +3,9 @@ package lib
 import (
 	"archive/zip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
-	"io"
 	"path/filepath"
 	"strings"
 )
@@ -83,7 +83,7 @@ func (c *Lib) ReadFile(path string) (result string, err error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	b, err := ioutil.ReadAll(file)
 	if err == nil {
 		result = string(b)
