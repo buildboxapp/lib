@@ -5,8 +5,8 @@ import "net/http"
 var lb *Lib
 
 // HTTP-functions
-func Curl(method, urlc, bodyJSON string, response interface{}) (result interface{}, err error) {
-	return lb.Curl(method, urlc, bodyJSON, response)
+func Curl(method, urlc, bodyJSON string, response interface{}, handlers map[string]string) (result interface{}, err error) {
+	return lb.Curl(method, urlc, bodyJSON, response, handlers)
 }
 
 // CLI-functions
