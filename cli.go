@@ -125,7 +125,7 @@ func (c *Lib) Ps(format string) (pids []string, services map[string][][]string, 
 
 							// получаем список доступных на данном прокси запущенных приложений
 							// ПЕРЕДЕЛАТЬ!!! слишком много реализаций Curl - сделать ревью!!!! убрать дубли и вынести в lib
-							_, err = c.Curl("GET", "http://localhost:"+conf["port_proxy"]+"/pid", "", &PidRegistry)
+							_, err = c.Curl("GET", "http://localhost:"+conf["port_proxy"]+"/pid", "", &PidRegistry, map[string]string{})
 
 							// просто слайс всех PidRegistry
 							raw = append(raw, PidRegistry)

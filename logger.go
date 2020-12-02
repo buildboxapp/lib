@@ -1,7 +1,7 @@
 // обертка для логирования, которая дополняем аттрибутами логируемого процесса logrus
 // дополняем значениями, идентифицирующими запущенный сервис UID,Name,Service
 
-package logger
+package lib
 
 import (
 	"github.com/sirupsen/logrus"
