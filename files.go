@@ -164,7 +164,6 @@ func (c *Lib) CreateDir(path string, mode os.FileMode) (err error) {
 	if mode == 0 {
 		mode = 0711
 	}
-
 	err = os.MkdirAll(path, mode)
 	if err != nil {
 		c.Logger.Error(err, "Error creating directory")
