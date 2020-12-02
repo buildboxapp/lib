@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	stdlog "log"
-
 	"fmt"
 	"io"
 	"os"
@@ -43,11 +41,11 @@ type Log struct {
 	// чтобы ускорить реакцию на них. Нужно понимать, что ошибка пользователя – это не ошибка системы.
 	// Если пользователь ввёл в поле -1, где это не предполагалось – не надо писать об этом в лог ошибок.
 
-	//Fatal: - логировать критические ошибки
+	//Panic: - логировать критические ошибки
 	// это особый класс ошибок. Такие ошибки приводят к неработоспособности системы в целом, или
 	// неработоспособности одной из подсистем. Чаще всего случаются фатальные ошибки из-за неверной конфигурации
 	// или отказов оборудования. Требуют срочной, немедленной реакции. Возможно, следует предусмотреть уведомление о таких ошибках по SMS.
-	// указываем уровни логирования Error/Warning/Debug/Info/Fatal
+	// указываем уровни логирования Error/Warning/Debug/Info/Panic
 
 	//Trace: - логировать обработки запросов
 
@@ -79,7 +77,8 @@ func (c *Log) Init(logsDir, level, uid, name, srv string) {
 
 	output, err = os.OpenFile(logsDir+"/"+logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		stdlog.Fatalf("error opening file: %v", err)
+		c.Panic(err, "error opening file")
+		return
 	}
 	//fmt.Println(logsDir + "/" + logName)
 
@@ -165,7 +164,23 @@ func (c *Log) Error(err error, args ...interface{}) {
 	}
 }
 
-func (c *Log) Fatal(err error, args ...interface{}) {
+func (c *Log) Panic(err error, args ...interface{}) {
+
+	if strings.Contains(c.Levels, "Fatal") {
+		logrusB.SetOutput(c.Output)
+		logrusB.SetFormatter(&logrus.JSONFormatter{})
+
+		logrusB.WithFields(logrus.Fields{
+			"name":  c.Name,
+			"uid":   c.UID,
+			"srv":   c.Service,
+			"error": fmt.Sprint(err),
+		}).Panic(args...)
+	}
+}
+
+// внутренняя ф-ция логирования и прекращения работы программы
+func (c *Log) Exit(err error, args ...interface{}) {
 
 	if strings.Contains(c.Levels, "Fatal") {
 		logrusB.SetOutput(c.Output)

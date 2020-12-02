@@ -24,7 +24,8 @@ func (c *Lib) Ls() (result []map[string]string) {
 	pathFolder := c.RootDir() + sep + "upload" //+ sep + c.State["domain"] + sep + "ini"
 	folders, err := ioutil.ReadDir(pathFolder)
 	if err != nil {
-		log.Fatal(err)
+		c.Logger.Panic(err)
+		return
 	}
 
 	// пробегаем текущую папку и считаем совпадание признаков
@@ -102,7 +103,8 @@ func (c *Lib) Ps(format string) (pids []string, services map[string][][]string, 
 	pathFolder := c.RootDir() + sep + "upload" //+ sep + c.State["domain"] + sep + "ini"
 	folders, err := ioutil.ReadDir(pathFolder)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+		return
 	}
 
 	// пробегаем текущую папку и считаем совпадание признаков

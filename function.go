@@ -299,7 +299,7 @@ func (c *Lib) RootDir() (rootDir string) {
 	rootDir, err = RootDirAction(cdir)
 	if err != nil {
 		fmt.Println("Error calculation RootDir. File: ", file, "; Error: ", err)
-		c.Logger.Fatal(err, "Error calculation RootDir. File: ", file)
+		c.Logger.Panic(err, "Error calculation RootDir. File: ", file)
 	}
 
 	return rootDir
