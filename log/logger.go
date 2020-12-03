@@ -5,15 +5,19 @@ package log
 
 import (
 	"github.com/sirupsen/logrus"
+	"context"
 	"strings"
 	"time"
 
 	"fmt"
 	"io"
 	"os"
+	"math/rand"
+	"path/filepath"
 )
 
 var logrusB = logrus.New()
+var sep = string(filepath.Separator)
 
 type Log struct {
 
@@ -58,6 +62,7 @@ type Log struct {
 	Name string `json:"name"`
 	// название сервиса (app/gui...)
 	Service string `json:"service"`
+	Dir string `json:"dir"`
 }
 
 func (c *Log) Trace(args ...interface{}) {
@@ -158,12 +163,78 @@ func (c *Log) Exit(err error, args ...interface{}) {
 	}
 }
 
+// Переинициализация файла логирования
+func (c *Log) RotateInit(ctx context.Context)  {
+	var delayReload time.Duration = 10		// минут - перезагрузка лога
+	var delayClear time.Duration = 30		// минут - удаляем старые файлы
+
+	// попытка обновить файл (раз в 10 минут)
+	go func() {
+		ticker := time.NewTicker(delayReload * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <- ctx.Done():
+				return
+			case <- ticker.C:
+				b := New(c.Dir, c.Levels, fmt.Sprint(rand.Int()), c.Name, c.Service)
+				c.Output = b.Output
+				ticker = time.NewTicker(delayReload * time.Second)
+			}
+		}
+	}()
+
+	// попытка очистки старый файлов (каждый час)
+	go func() {
+		ticker := time.NewTicker(delayClear * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <- ctx.Done():
+				return
+			case <- ticker.C:
+				oneMonthAgo := time.Now().AddDate(0, -1, 0) // minus 1 месяц
+				fileMonthAgoDate := oneMonthAgo.Format("2006.01.02")
+
+				// пробегаем директорию и читаем все файлы, если имя меньше текущее время - месяц = удаляем
+				directory, _ := os.Open(c.Dir)
+				objects, err := directory.Readdir(-1)
+				if err != nil {
+					c.Error(err, "Error read directory: ", directory)
+					return
+				}
+
+				for _, obj := range objects {
+					filename := obj.Name()
+					filenameMonthAgoDate := c.Service + "_" + fileMonthAgoDate
+
+					if filenameMonthAgoDate > filename {
+						pathFile := c.Dir + sep + filename
+						err = os.Remove(pathFile)
+						if err != nil {
+							c.Error(err, "Error deleted file: ", pathFile)
+							return
+						}
+					}
+				}
+				ticker = time.NewTicker(delayClear * time.Second)
+			}
+		}
+	}()
+
+
+
+}
+
 func New(logsDir, level, uid, name, srv string) *Log {
 	var output io.Writer
 	var err error
 	var mode os.FileMode
 
-	logName := srv + "_" + fmt.Sprint(time.Now().Day()) + ".log"
+	datefile := time.Now().Format("2006.01.02")
+	logName := srv + "_" + datefile + ".log"
 
 	// создаем/открываем файл логирования и назначаем его логеру
 	mode = 0711
@@ -185,5 +256,6 @@ func New(logsDir, level, uid, name, srv string) *Log {
 		UID:          uid,
 		Name:         name,
 		Service:      srv,
+		Dir: 		  logsDir,
 	}
 }
