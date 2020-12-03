@@ -1,7 +1,7 @@
 // обертка для логирования, которая дополняем аттрибутами логируемого процесса logrus
 // дополняем значениями, идентифицирующими запущенный сервис UID,Name,Service
 
-package lib
+package log
 
 import (
 	"github.com/sirupsen/logrus"
@@ -60,38 +60,7 @@ type Log struct {
 	Service string `json:"service"`
 }
 
-func (c *Log) Init(logsDir, level, uid, name, srv string) {
-	var output io.Writer
-	var err error
-	var mode os.FileMode
-
-	logName := srv + "_" + fmt.Sprint(time.Now().Day()) + ".log"
-
-	// создаем/открываем файл логирования и назначаем его логеру
-	mode = 0711
-	err = os.MkdirAll(logsDir, mode)
-	if err != nil {
-		c.Error(err, "Error creating directory")
-		return
-	}
-
-	output, err = os.OpenFile(logsDir+"/"+logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		c.Panic(err, "error opening file")
-		return
-	}
-	//fmt.Println(logsDir + "/" + logName)
-
-	c.Output = output
-	c.Levels = level
-	c.UID = uid
-	c.Name = name
-	c.Service = srv
-
-}
-
 func (c *Log) Trace(args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Trace") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -105,7 +74,6 @@ func (c *Log) Trace(args ...interface{}) {
 }
 
 func (c *Log) Debug(args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Debug") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -122,7 +90,6 @@ func (c *Log) Debug(args ...interface{}) {
 }
 
 func (c *Log) Info(args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Info") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -136,7 +103,6 @@ func (c *Log) Info(args ...interface{}) {
 }
 
 func (c *Log) Warning(args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Warning") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -150,7 +116,6 @@ func (c *Log) Warning(args ...interface{}) {
 }
 
 func (c *Log) Error(err error, args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Error") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -165,7 +130,6 @@ func (c *Log) Error(err error, args ...interface{}) {
 }
 
 func (c *Log) Panic(err error, args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Fatal") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -181,7 +145,6 @@ func (c *Log) Panic(err error, args ...interface{}) {
 
 // внутренняя ф-ция логирования и прекращения работы программы
 func (c *Log) Exit(err error, args ...interface{}) {
-
 	if strings.Contains(c.Levels, "Fatal") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
@@ -192,5 +155,35 @@ func (c *Log) Exit(err error, args ...interface{}) {
 			"srv":   c.Service,
 			"error": fmt.Sprint(err),
 		}).Fatal(args...)
+	}
+}
+
+func New(logsDir, level, uid, name, srv string) *Log {
+	var output io.Writer
+	var err error
+	var mode os.FileMode
+
+	logName := srv + "_" + fmt.Sprint(time.Now().Day()) + ".log"
+
+	// создаем/открываем файл логирования и назначаем его логеру
+	mode = 0711
+	err = os.MkdirAll(logsDir, mode)
+	if err != nil {
+		logrus.Error(err, "Error creating directory")
+		return nil
+	}
+
+	output, err = os.OpenFile(logsDir+"/"+logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		logrus.Panic(err, "error opening file")
+		return nil
+	}
+
+	return &Log{
+		Output:       output,
+		Levels: 	  level,
+		UID:          uid,
+		Name:         name,
+		Service:      srv,
 	}
 }

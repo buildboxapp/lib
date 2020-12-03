@@ -2,10 +2,11 @@ package lib
 
 import (
 	"github.com/getlantern/errors"
+	"github.com/buildboxapp/lib/log"
 )
 
 type Lib struct {
-	Logger *Log
+	Logger *log.Log
 	State  map[string]string
 	UrlAPI string `json:"url_api"`
 	UrlGUI string `json:"url_gui"`
