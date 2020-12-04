@@ -149,7 +149,7 @@ func (c *Log) Error(err error, args ...interface{}) {
 }
 
 func (c *Log) Panic(err error, args ...interface{}) {
-	if strings.Contains(c.Levels, "Fatal") {
+	if strings.Contains(c.Levels, "Panic") {
 		logrusB.SetOutput(c.Output)
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
