@@ -4,15 +4,14 @@
 package log
 
 import (
-	"github.com/sirupsen/logrus"
 	"context"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
 	"fmt"
 	"io"
 	"os"
-	"math/rand"
 	"path/filepath"
 )
 
@@ -56,13 +55,16 @@ type Log struct {
 	// можно указывать через | разные уровени логирования, например Error|Warning
 	// можно указать All - логирование всех уровней
 	Levels string `json:"levels"`
-	// uid процесса (сервиса), который логируется
+	// uid процесса (сервиса), который логируется (случайная величина)
 	UID string `json:"uid"`
 	// имя процесса (сервиса), который логируется
 	Name string `json:"name"`
 	// название сервиса (app/gui...)
 	Service string `json:"service"`
+	// директория сохранения логов
 	Dir string `json:"dir"`
+	// uid-конфигурации с которой был запущен процесс
+	Config string `json:"config"`
 }
 
 func (c *Log) Trace(args ...interface{}) {
@@ -74,6 +76,7 @@ func (c *Log) Trace(args ...interface{}) {
 			"name": c.Name,
 			"uid":  c.UID,
 			"srv":  c.Service,
+			"config":  c.Config,
 		}).Trace(args...)
 	}
 }
@@ -90,6 +93,7 @@ func (c *Log) Debug(args ...interface{}) {
 			"name": c.Name,
 			"uid":  c.UID,
 			"srv":  c.Service,
+			"config":  c.Config,
 		}).Debug(args...)
 	}
 }
@@ -103,6 +107,7 @@ func (c *Log) Info(args ...interface{}) {
 			"name": c.Name,
 			"uid":  c.UID,
 			"srv":  c.Service,
+			"config":  c.Config,
 		}).Info(args...)
 	}
 }
@@ -116,6 +121,7 @@ func (c *Log) Warning(args ...interface{}) {
 			"name": c.Name,
 			"uid":  c.UID,
 			"srv":  c.Service,
+			"config":  c.Config,
 		}).Warn(args...)
 	}
 }
@@ -129,6 +135,7 @@ func (c *Log) Error(err error, args ...interface{}) {
 			"name":  c.Name,
 			"uid":   c.UID,
 			"srv":   c.Service,
+			"config":  c.Config,
 			"error": fmt.Sprint(err),
 		}).Error(args...)
 	}
@@ -143,6 +150,7 @@ func (c *Log) Panic(err error, args ...interface{}) {
 			"name":  c.Name,
 			"uid":   c.UID,
 			"srv":   c.Service,
+			"config":  c.Config,
 			"error": fmt.Sprint(err),
 		}).Panic(args...)
 	}
@@ -158,6 +166,7 @@ func (c *Log) Exit(err error, args ...interface{}) {
 			"name":  c.Name,
 			"uid":   c.UID,
 			"srv":   c.Service,
+			"config":  c.Config,
 			"error": fmt.Sprint(err),
 		}).Fatal(args...)
 	}
@@ -178,16 +187,16 @@ func (c *Log) RotateInit(ctx context.Context)  {
 			case <- ctx.Done():
 				return
 			case <- ticker.C:
-				b := New(c.Dir, c.Levels, fmt.Sprint(rand.Int()), c.Name, c.Service)
+				b := New(c.Dir, c.Levels, c.UID, c.Name, c.Service, c.Config)
 				c.Output = b.Output
-				ticker = time.NewTicker(delayReload * time.Second)
+				ticker = time.NewTicker(delayReload * time.Minute)
 			}
 		}
 	}()
 
-	// попытка очистки старый файлов (каждый час)
+	// попытка очистки старых файлов (каждые пол часа)
 	go func() {
-		ticker := time.NewTicker(delayClear * time.Second)
+		ticker := time.NewTicker(delayClear * time.Minute)
 		defer ticker.Stop()
 
 		for {
@@ -228,7 +237,7 @@ func (c *Log) RotateInit(ctx context.Context)  {
 
 }
 
-func New(logsDir, level, uid, name, srv string) *Log {
+func New(logsDir, level, uid, name, srv, config string) *Log {
 	var output io.Writer
 	var err error
 	var mode os.FileMode
@@ -257,5 +266,6 @@ func New(logsDir, level, uid, name, srv string) *Log {
 		Name:         name,
 		Service:      srv,
 		Dir: 		  logsDir,
+		Config:  	  config,
 	}
 }
