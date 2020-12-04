@@ -259,7 +259,7 @@ func (c *Log) RotateInit(ctx context.Context) {
 						}
 					}
 				}
-				ticker = time.NewTicker(c.IntervalClearFiles * time.Second)
+				ticker = time.NewTicker(c.IntervalClearFiles)
 			}
 		}
 	}()
