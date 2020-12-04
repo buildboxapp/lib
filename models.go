@@ -1,8 +1,8 @@
 package lib
 
 import (
-	"github.com/getlantern/errors"
 	"github.com/buildboxapp/lib/log"
+	"github.com/getlantern/errors"
 )
 
 type Lib struct {

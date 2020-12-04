@@ -80,10 +80,10 @@ func (c *Log) Trace(args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name": c.Name,
-			"uid":  c.UID,
-			"srv":  c.Service,
-			"config":  c.Config,
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
 		}).Trace(args...)
 	}
 }
@@ -97,10 +97,10 @@ func (c *Log) Debug(args ...interface{}) {
 		//logrusB.SetLevel(logrus.InfoLevel)
 
 		logrusB.WithFields(logrus.Fields{
-			"name": c.Name,
-			"uid":  c.UID,
-			"srv":  c.Service,
-			"config":  c.Config,
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
 		}).Debug(args...)
 	}
 }
@@ -111,10 +111,10 @@ func (c *Log) Info(args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name": c.Name,
-			"uid":  c.UID,
-			"srv":  c.Service,
-			"config":  c.Config,
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
 		}).Info(args...)
 	}
 }
@@ -125,10 +125,10 @@ func (c *Log) Warning(args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name": c.Name,
-			"uid":  c.UID,
-			"srv":  c.Service,
-			"config":  c.Config,
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
 		}).Warn(args...)
 	}
 }
@@ -139,11 +139,11 @@ func (c *Log) Error(err error, args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name":  c.Name,
-			"uid":   c.UID,
-			"srv":   c.Service,
-			"config":  c.Config,
-			"error": fmt.Sprint(err),
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
+			"error":  fmt.Sprint(err),
 		}).Error(args...)
 	}
 }
@@ -154,11 +154,11 @@ func (c *Log) Panic(err error, args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name":  c.Name,
-			"uid":   c.UID,
-			"srv":   c.Service,
-			"config":  c.Config,
-			"error": fmt.Sprint(err),
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
+			"error":  fmt.Sprint(err),
 		}).Panic(args...)
 	}
 }
@@ -170,38 +170,38 @@ func (c *Log) Exit(err error, args ...interface{}) {
 		logrusB.SetFormatter(&logrus.JSONFormatter{})
 
 		logrusB.WithFields(logrus.Fields{
-			"name":  c.Name,
-			"uid":   c.UID,
-			"srv":   c.Service,
-			"config":  c.Config,
-			"error": fmt.Sprint(err),
+			"name":   c.Name,
+			"uid":    c.UID,
+			"srv":    c.Service,
+			"config": c.Config,
+			"error":  fmt.Sprint(err),
 		}).Fatal(args...)
 	}
 }
 
 // Переинициализация файла логирования
-func (c *Log) RotateInit(ctx context.Context)  {
+func (c *Log) RotateInit(ctx context.Context) {
 
 	// попытка обновить файл (раз в 10 минут)
 	go func() {
-		ticker := time.NewTicker(c.IntervalReload * time.Second)
+		ticker := time.NewTicker(c.IntervalReload)
 		defer ticker.Stop()
 
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				return
-			case <- ticker.C:
-				b := New(c.Dir, c.Levels, c.UID, c.Name, c.Service, c.Config)
+			case <-ticker.C:
+				b := New(c.Dir, c.Levels, c.UID, c.Name, c.Service, c.Config, c.IntervalReload, c.IntervalClearFiles, c.PeriodSaveFiles)
 				c.Output = b.Output
-				ticker = time.NewTicker(c.IntervalReload * time.Minute)
+				ticker = time.NewTicker(c.IntervalReload)
 			}
 		}
 	}()
 
 	// попытка очистки старых файлов (каждые пол часа)
 	go func() {
-		ticker := time.NewTicker(c.IntervalClearFiles * time.Minute)
+		ticker := time.NewTicker(c.IntervalClearFiles)
 		defer ticker.Stop()
 
 		// получаем период, через который мы будем удалять файлы
@@ -232,9 +232,9 @@ func (c *Log) RotateInit(ctx context.Context)  {
 
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				return
-			case <- ticker.C:
+			case <-ticker.C:
 				oneMonthAgo := time.Now().AddDate(-year, -month, -day) // minus 1 месяц
 				fileMonthAgoDate := oneMonthAgo.Format("2006.01.02")
 
@@ -263,12 +263,9 @@ func (c *Log) RotateInit(ctx context.Context)  {
 			}
 		}
 	}()
-
-
-
 }
 
-func New(logsDir, level, uid, name, srv, config string) *Log {
+func New(logsDir, level, uid, name, srv, config string, intervalReload, intervalClearFiles time.Duration, periodSaveFiles string) *Log {
 	var output io.Writer
 	var err error
 	var mode os.FileMode
@@ -291,12 +288,15 @@ func New(logsDir, level, uid, name, srv, config string) *Log {
 	}
 
 	return &Log{
-		Output:       output,
-		Levels: 	  level,
-		UID:          uid,
-		Name:         name,
-		Service:      srv,
-		Dir: 		  logsDir,
-		Config:  	  config,
+		Output:             output,
+		Levels:             level,
+		UID:                uid,
+		Name:               name,
+		Service:            srv,
+		Dir:                logsDir,
+		Config:             config,
+		IntervalReload:     intervalClearFiles,
+		IntervalClearFiles: intervalClearFiles,
+		PeriodSaveFiles:    periodSaveFiles,
 	}
 }
