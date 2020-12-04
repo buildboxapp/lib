@@ -6,6 +6,7 @@ package log
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,6 +66,12 @@ type Log struct {
 	Dir string `json:"dir"`
 	// uid-конфигурации с которой был запущен процесс
 	Config string `json:"config"`
+	// интервал между проверками актуального файла логирования (для текущего дня)
+	IntervalReload time.Duration `json:"delay_reload"`
+	// интервал проверками на наличие файлов на удаление
+	IntervalClearFiles time.Duration `json:"interval_clear_files"`
+	// период хранения файлов лет-месяцев-дней (например: 0-1-0 - хранить 1 месяц)
+	PeriodSaveFiles string `json:"period_save_files"`
 }
 
 func (c *Log) Trace(args ...interface{}) {
@@ -174,12 +181,10 @@ func (c *Log) Exit(err error, args ...interface{}) {
 
 // Переинициализация файла логирования
 func (c *Log) RotateInit(ctx context.Context)  {
-	var delayReload time.Duration = 10		// минут - перезагрузка лога
-	var delayClear time.Duration = 30		// минут - удаляем старые файлы
 
 	// попытка обновить файл (раз в 10 минут)
 	go func() {
-		ticker := time.NewTicker(delayReload * time.Second)
+		ticker := time.NewTicker(c.IntervalReload * time.Second)
 		defer ticker.Stop()
 
 		for {
@@ -189,22 +194,48 @@ func (c *Log) RotateInit(ctx context.Context)  {
 			case <- ticker.C:
 				b := New(c.Dir, c.Levels, c.UID, c.Name, c.Service, c.Config)
 				c.Output = b.Output
-				ticker = time.NewTicker(delayReload * time.Minute)
+				ticker = time.NewTicker(c.IntervalReload * time.Minute)
 			}
 		}
 	}()
 
 	// попытка очистки старых файлов (каждые пол часа)
 	go func() {
-		ticker := time.NewTicker(delayClear * time.Minute)
+		ticker := time.NewTicker(c.IntervalClearFiles * time.Minute)
 		defer ticker.Stop()
+
+		// получаем период, через который мы будем удалять файлы
+		period := c.PeriodSaveFiles
+		if period == "" {
+			c.Error(fmt.Errorf("%s", "Fail perion save log files. (expected format: year-month-day; eg: 0-1-0)"))
+			return
+		}
+		slPeriod := strings.Split(period, "-")
+		if len(slPeriod) < 3 {
+			c.Error(fmt.Errorf("%s", "Fail perion save log files. (expected format: year-month-day; eg: 0-1-0)"))
+			return
+		}
+
+		// получаем числовые значения года месяца и дня для расчета даты удаления файлов
+		year, err := strconv.Atoi(slPeriod[0])
+		if err != nil {
+			c.Error(err, "Fail converted Year from period saved log files. (expected format: year-month-day; eg: 0-1-0)")
+		}
+		month, err := strconv.Atoi(slPeriod[1])
+		if err != nil {
+			c.Error(err, "Fail converted Month from period saved log files. (expected format: year-month-day; eg: 0-1-0)")
+		}
+		day, err := strconv.Atoi(slPeriod[2])
+		if err != nil {
+			c.Error(err, "Fail converted Day from period saved log files. (expected format: year-month-day; eg: 0-1-0)")
+		}
 
 		for {
 			select {
 			case <- ctx.Done():
 				return
 			case <- ticker.C:
-				oneMonthAgo := time.Now().AddDate(0, -1, 0) // minus 1 месяц
+				oneMonthAgo := time.Now().AddDate(-year, -month, -day) // minus 1 месяц
 				fileMonthAgoDate := oneMonthAgo.Format("2006.01.02")
 
 				// пробегаем директорию и читаем все файлы, если имя меньше текущее время - месяц = удаляем
@@ -228,7 +259,7 @@ func (c *Log) RotateInit(ctx context.Context)  {
 						}
 					}
 				}
-				ticker = time.NewTicker(delayClear * time.Second)
+				ticker = time.NewTicker(c.IntervalClearFiles * time.Second)
 			}
 		}
 	}()
