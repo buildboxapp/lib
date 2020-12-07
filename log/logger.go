@@ -248,7 +248,7 @@ func (c *Log) RotateInit(ctx context.Context) {
 
 				for _, obj := range objects {
 					filename := obj.Name()
-					filenameMonthAgoDate := c.Service + "_" + fileMonthAgoDate
+					filenameMonthAgoDate := fileMonthAgoDate + "_" + c.Service
 
 					if filenameMonthAgoDate > filename {
 						pathFile := c.Dir + sep + filename
@@ -271,7 +271,7 @@ func New(logsDir, level, uid, name, srv, config string, intervalReload, interval
 	var mode os.FileMode
 
 	datefile := time.Now().Format("2006.01.02")
-	logName := srv + "_" + datefile + ".log"
+	logName := datefile + "_" + srv + ".log"
 
 	// создаем/открываем файл логирования и назначаем его логеру
 	mode = 0711
@@ -295,7 +295,7 @@ func New(logsDir, level, uid, name, srv, config string, intervalReload, interval
 		Service:            srv,
 		Dir:                logsDir,
 		Config:             config,
-		IntervalReload:     intervalClearFiles,
+		IntervalReload:     intervalReload,
 		IntervalClearFiles: intervalClearFiles,
 		PeriodSaveFiles:    periodSaveFiles,
 	}
