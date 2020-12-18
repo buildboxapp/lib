@@ -278,7 +278,7 @@ func New(logsDir, level, uid, name, srv, config string, intervalReload, interval
 	var mode os.FileMode
 
 	datefile := time.Now().Format("2006.01.02")
-	logName := datefile + "_" + srv + ".log"
+	logName := datefile + "_" + srv + "_" + uid + ".log"
 
 	// создаем/открываем файл логирования и назначаем его логеру
 	mode = 0711

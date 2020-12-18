@@ -58,14 +58,14 @@ type Response struct {
 	Data    interface{} `json:"data"`
 	Res     interface{} `json:"res"`
 	Status  RestStatus  `json:"status"`
-	Metrics Metrics     `json:"metrics"`
+	Metrics Metrics     `json:"metric"`
 }
 
 type ResponseData struct {
 	Data    []Data      `json:"data"`
 	Res     interface{} `json:"res"`
 	Status  RestStatus  `json:"status"`
-	Metrics Metrics     `json:"metrics"`
+	Metrics Metrics     `json:"metric"`
 }
 
 type Metrics struct {
