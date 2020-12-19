@@ -40,6 +40,7 @@ type ServiceMetric interface {
 	SetState()
 	SetConnectionIncrement()
 	SetConnectionDecrement()
+	SetTimeRequest(timeRequest time.Duration)
 	Generate()
 	Get() (result Metrics)
 	Clear()
@@ -51,6 +52,17 @@ func (s *serviceMetric) SetState(){
 	s.mux.Lock()
 	s.StateHost.Tick()
 	s.mux.Unlock()
+
+	return
+}
+
+// записываем время обработки запроса в массив
+func (s *serviceMetric) SetTimeRequest(timeRequest time.Duration) {
+	go func() {
+		s.mux.Lock()
+		s.tpr = append(s.tpr, timeRequest)
+		s.mux.Unlock()
+	}()
 
 	return
 }
