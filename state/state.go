@@ -17,7 +17,6 @@ type StateHost struct {
 	UsedCPU,
 	UsedMemory,
 	UsedDisk float64
-	Info interface{}
 }
 
 func (c *StateHost) Tick()  {

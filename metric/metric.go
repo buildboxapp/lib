@@ -4,14 +4,15 @@ import (
 	"context"
 	bblog "github.com/buildboxapp/lib/log"
 	bbstate "github.com/buildboxapp/lib/state"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
 )
 
 type Metrics struct {
-	StateHost bbstate.StateHost
-	Connections int `json:"connection"`				// количество открытых соединений за весь период учета
+	StateHost *bbstate.StateHost
+	Connections int `json:"connection"`				// количество соединений за весь период учета
 	AVG_Queue int `json:"avg_queue"` 				// среднее количество запросов в очереди
 	QTL_Queue_90 int `json:"qtl_queue_90"` 			// квантиль 90%
 	QTL_Queue_99 int `json:"qtl_queue_99"` 			// квантиль 99%
@@ -33,7 +34,7 @@ type ServiceMetric interface {
 	SetState()
 	SetConnectionIncrement()
 	SetConnectionDecrement()
-	Generate() (result Metrics)
+	Generate()
 	Get() (result Metrics)
 	Clear()
 	SaveToStash()
@@ -55,6 +56,7 @@ func (s *serviceMetric) SetState(){
 func (s *serviceMetric) SetConnectionIncrement(){
 	go func() {
 		s.mux.Lock()
+		s.Connections = s.Connections + 1
 		s.connectionOpen = s.connectionOpen + 1
 		s.queue = append(s.queue,  s.connectionOpen)
 		s.mux.Unlock()
@@ -103,19 +105,17 @@ func (s *serviceMetric) Get() (result Metrics) {
 	return s.Stash
 }
 
-func (s *serviceMetric) Generate() (result Metrics) {
+func (s *serviceMetric) Generate() {
 	s.SetState()	// получаю текущие метрики загрузки хоста
-	result.StateHost = s.StateHost
-	result.Connections = s.Connections	// текущее кол-во соединений
 
 	// расчитываем значения метрик
-	s.AVG_Queue = 1
+	s.AVG_Queue = rand.Int()
 	s.AVG_TPR = 10
-	s.QTL_Queue_90 = 0
-	s.QTL_Queue_99 = 0
-	s.RPS = 100
+	s.QTL_Queue_90 = rand.Int()
+	s.QTL_Queue_99 = rand.Int()
+	s.RPS = rand.Int()
 
-	return result
+	return
 }
 
 func (s *serviceMetric) Middleware(next http.Handler) http.Handler {
