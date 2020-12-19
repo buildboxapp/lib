@@ -132,7 +132,17 @@ func (s *serviceMetric) Middleware(next http.Handler) http.Handler {
 // interval - интервалы времени, через которые статистика будет сбрасыватсья в лог
 func New(ctx context.Context, logger *bblog.Log, interval time.Duration) (metrics ServiceMetric) {
 	m := sync.Mutex{}
+	s := Metrics{
+		AVG_Queue: 0,
+		AVG_TPR: 0,
+		StateHost: nil,
+		QTL_Queue_99: 0,
+		QTL_Queue_90: 0,
+		RPS: 0,
+	}
 	metrics = &serviceMetric{
+		Metrics: s,
+		Stash: s,
 		connectionOpen: 0,
 		queue: []int{},
 		mux: &m,
