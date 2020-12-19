@@ -5,28 +5,33 @@ import (
 	"encoding/json"
 	bblog "github.com/buildboxapp/lib/log"
 	bbstate "github.com/buildboxapp/lib/state"
-	"math/rand"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 )
 
 type Metrics struct {
 	StateHost bbstate.StateHost
-	Connections int `json:"connection"`				// количество соединений за весь период учета
-	AVG_Queue int `json:"avg_queue"` 				// среднее количество запросов в очереди
-	QTL_Queue_90 int `json:"qtl_queue_90"` 			// квантиль 90%
-	QTL_Queue_99 int `json:"qtl_queue_99"` 			// квантиль 99%
-	AVG_TPR time.Duration `json:"avg_tpr"`				// Time per request - среднее время обработки запроса
-	RPS	int `json:"rps"`							// Request per second - количество запросов в секунду
+	Connections int						// количество соединений за весь период учета
+	Queue_AVG float32 					// среднее количество запросов в очереди
+	Queue_QTL_80 float32  				// квантиль 80% - какое среднее кол-во запросов до границы 80% в отсорованном ряду
+	Queue_QTL_90 float32  				// квантиль 90%
+	Queue_QTL_99 float32 				// квантиль 99%
+	TPR_AVG_MS float32 					// (ms) Time per request - среднее время обработки запроса
+	TPR_QTL_MS_80 float32  				// (ms) квантиль 80% - какое среднее время обработки запросов до границы 80% в отсорованном ряду
+	TPR_QTL_MS_90 float32  				// (ms) квантиль 90%
+	TPR_QTL_MS_99 float32 				// (ms) квантиль 99%
+
+	RPS	int 							// Request per second - количество запросов в секунду
 }
 
 type serviceMetric struct {
 	Metrics
-	Stash Metrics `json:"stash"`					// карман для сохранения предыдущего значения
-
-	connectionOpen int `json:"connection_current"`	// текущее кол-во открытых соединений (+ при запрос - при ответе)
-	queue []int `json:"queue"`						// массив соединений в очереди (не закрытых) см.выше
+	Stash Metrics 						// карман для сохранения предыдущего значения
+	connectionOpen int 					// текущее кол-во открытых соединений (+ при запрос - при ответе)
+	queue []int 						// массив соединений в очереди (не закрытых) см.выше
+	tpr []time.Duration					// массив времен обработки запросов
 	mux *sync.Mutex
 	ctx context.Context
 }
@@ -81,16 +86,32 @@ func (s *serviceMetric) SetConnectionDecrement(){
 	return
 }
 
+func (s *serviceMetric) SetP(value time.Duration){
+	go func() {
+		s.mux.Lock()
+		s.tpr = append(s.tpr, value)
+		s.mux.Unlock()
+	}()
+
+	return
+}
+
 // сохраняем текущее значение расчитанных метрик в кармане
 func (s *serviceMetric) SaveToStash() {
 	s.mux.Lock()
 	s.Stash.StateHost = s.StateHost
 	s.Stash.Connections = s.Connections
 	s.Stash.RPS = s.RPS
-	s.Stash.QTL_Queue_99 = s.QTL_Queue_99
-	s.Stash.QTL_Queue_90 = s.QTL_Queue_90
-	s.Stash.AVG_TPR = s.AVG_TPR
-	s.Stash.AVG_Queue = s.AVG_Queue
+	
+	s.Stash.Queue_AVG = s.Queue_AVG
+	s.Stash.Queue_QTL_99 = s.Queue_QTL_99
+	s.Stash.Queue_QTL_90 = s.Queue_QTL_90
+	s.Stash.Queue_QTL_80 = s.Queue_QTL_80
+
+	s.Stash.TPR_AVG_MS = s.TPR_AVG_MS
+	s.Stash.TPR_QTL_MS_80 = s.TPR_QTL_MS_80
+	s.Stash.TPR_QTL_MS_90 = s.TPR_QTL_MS_90
+	s.Stash.TPR_QTL_MS_99 = s.TPR_QTL_MS_99
 	s.mux.Unlock()
 }
 
@@ -109,14 +130,103 @@ func (s *serviceMetric) Get() (result Metrics) {
 }
 
 func (s *serviceMetric) Generate() {
+	var val_Queue_QTL_80, val_Queue_QTL_90, val_Queue_QTL_99, val_Queue float32
+	var Queue_AVG, Queue_QTL_80, Queue_QTL_90, Queue_QTL_99 float32
+	var val_TPR_80, val_TPR_90, val_TPR_99, val_TPR float32
+	var AVG_TPR, QTL_TPR_80, QTL_TPR_90, QTL_TPR_99 float32
 	s.SetState()	// получаю текущие метрики загрузки хоста
 
-	// расчитываем значения метрик
-	s.AVG_Queue = rand.Int()
-	s.AVG_TPR = 10
-	s.QTL_Queue_90 = rand.Int()
-	s.QTL_Queue_99 = rand.Int()
-	s.RPS = rand.Int()
+
+	//////////////////////////////////////////////////////////
+	// расчитываем среднее кол-во запросо и квартили (средние значения после 80-90-99 процентов всех запросов)
+	//////////////////////////////////////////////////////////
+
+	// сортируем список
+	sort.Ints(s.queue)
+
+	lenQueue := len(s.queue)
+	len_Queue_QTL_80 := lenQueue * 8 / 10
+	len_Queue_QTL_90 := lenQueue * 9 / 10
+	len_Queue_QTL_99 := lenQueue * 99 / 100
+
+	if  lenQueue != 0 {
+		for i, v := range s.queue {
+			vall := float32(v)
+			// суммируем значения которые после 80% других
+			if i > len_Queue_QTL_80 {
+				val_Queue_QTL_80 =  val_Queue_QTL_80 + vall
+			}
+			// суммируем значения которые после 90% других
+			if i > len_Queue_QTL_90 {
+				val_Queue_QTL_90 =  val_Queue_QTL_90 + vall
+			}
+			// суммируем значения которые после 99% других
+			if i > len_Queue_QTL_99 {
+				val_Queue_QTL_99 =  val_Queue_QTL_99 + vall
+			}
+
+			val_Queue = val_Queue + vall
+		}
+		Queue_AVG = val_Queue / float32(lenQueue) - 1
+		Queue_QTL_80 = val_Queue_QTL_80 / float32(lenQueue - len_Queue_QTL_80)
+		Queue_QTL_90 = val_Queue_QTL_90 / float32(lenQueue - len_Queue_QTL_90)
+		Queue_QTL_99 = val_Queue_QTL_99 / float32(lenQueue - len_Queue_QTL_99)
+	}
+
+	//////////////////////////////////////////////////////////
+	// расчитываем среднее время запросо и квартили (средние значения после 80-90-99 процентов всех запросов)
+	//////////////////////////////////////////////////////////
+
+	// сортируем список
+	timeInt := []float64{}
+	for _, v := range s.tpr {
+		timeInt = append(timeInt, float64(v.Microseconds()))
+	}
+	sort.Float64s(timeInt)
+
+	lenTPR := len(timeInt)
+	len_TPR_80 := lenTPR * 8 / 10
+	len_TPR_90 := lenTPR * 9 / 10
+	len_TPR_99 := lenTPR * 99 / 100
+
+	if  lenTPR != 0 {
+		for i, v := range timeInt {
+			vall := float32(v)
+			// суммируем значения которые после 80% других
+			if i > len_TPR_80 {
+				val_TPR_80 =  val_TPR_80 + vall
+			}
+			// суммируем значения которые после 90% других
+			if i > len_TPR_90 {
+				val_TPR_90 =  val_TPR_90 + vall
+			}
+			// суммируем значения которые после 99% других
+			if i > len_TPR_99 {
+				val_TPR_99 =  val_TPR_99 + vall
+			}
+
+			val_TPR = val_TPR + vall
+		}
+		AVG_TPR = val_Queue / float32(lenQueue) - 1
+		QTL_TPR_80 = val_TPR_80 / float32(lenTPR - len_TPR_80)
+		QTL_TPR_90 = val_TPR_90 / float32(lenTPR - len_TPR_90)
+		QTL_TPR_99 = val_TPR_99 / float32(lenTPR - len_TPR_99)
+	}
+
+	//////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
+
+	s.RPS = s.connectionOpen / 10
+
+	s.Queue_AVG = Queue_AVG
+	s.Queue_QTL_80 = Queue_QTL_80
+	s.Queue_QTL_90 = Queue_QTL_90
+	s.Queue_QTL_99 = Queue_QTL_99
+
+	s.TPR_AVG_MS = AVG_TPR
+	s.TPR_QTL_MS_80 = QTL_TPR_80
+	s.TPR_QTL_MS_90 = QTL_TPR_90
+	s.TPR_QTL_MS_99 = QTL_TPR_99
 
 	return
 }
@@ -137,11 +247,15 @@ func New(ctx context.Context, logger *bblog.Log, interval time.Duration) (metric
 	m := sync.Mutex{}
 	t := bbstate.StateHost{}
 	s := Metrics{
-		AVG_Queue: 0,
-		AVG_TPR: 0,
 		StateHost: t,
-		QTL_Queue_99: 0,
-		QTL_Queue_90: 0,
+		Queue_AVG: 0,
+		Queue_QTL_99: 0,
+		Queue_QTL_90: 0,
+		Queue_QTL_80: 0,
+		TPR_AVG_MS: 0,
+		TPR_QTL_MS_80: 0,
+		TPR_QTL_MS_90: 0,
+		TPR_QTL_MS_99: 0,
 		RPS: 0,
 	}
 	metrics = &serviceMetric{
@@ -167,13 +281,12 @@ func RunMetricLogger(ctx context.Context, m ServiceMetric, logger *bblog.Log, in
 			case <- ctx.Done():
 				return
 			case <- ticker.C:
-				// сохраняем расчитанные значения в памяти для пинга и затираем текущие данные
-
 				// сохраняем значение метрик в лог
 				m.Generate()			// сгенерировали метрики
 				m.SaveToStash()			// сохранили в карман
 				m.Clear()				// очистили объект метрик для приема новых данных
-				logger.Trace(json.Marshal(m.Get()))	// записали в лог из кармана
+				mes, _ := json.Marshal(m.Get())
+				logger.Trace(string(mes))	// записали в лог из кармана
 
 				ticker = time.NewTicker(interval)
 			}
