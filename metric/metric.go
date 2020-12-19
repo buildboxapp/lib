@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+	"encoding/json"
 	bblog "github.com/buildboxapp/lib/log"
 	bbstate "github.com/buildboxapp/lib/state"
 	"math/rand"
@@ -11,7 +12,7 @@ import (
 )
 
 type Metrics struct {
-	StateHost *bbstate.StateHost
+	StateHost bbstate.StateHost
 	Connections int `json:"connection"`				// количество соединений за весь период учета
 	AVG_Queue int `json:"avg_queue"` 				// среднее количество запросов в очереди
 	QTL_Queue_90 int `json:"qtl_queue_90"` 			// квантиль 90%
@@ -83,6 +84,8 @@ func (s *serviceMetric) SetConnectionDecrement(){
 // сохраняем текущее значение расчитанных метрик в кармане
 func (s *serviceMetric) SaveToStash() {
 	s.mux.Lock()
+	s.Stash.StateHost = s.StateHost
+	s.Stash.Connections = s.Connections
 	s.Stash.RPS = s.RPS
 	s.Stash.QTL_Queue_99 = s.QTL_Queue_99
 	s.Stash.QTL_Queue_90 = s.QTL_Queue_90
@@ -136,7 +139,7 @@ func New(ctx context.Context, logger *bblog.Log, interval time.Duration) (metric
 	s := Metrics{
 		AVG_Queue: 0,
 		AVG_TPR: 0,
-		StateHost: &t,
+		StateHost: t,
 		QTL_Queue_99: 0,
 		QTL_Queue_90: 0,
 		RPS: 0,
@@ -170,7 +173,7 @@ func RunMetricLogger(ctx context.Context, m ServiceMetric, logger *bblog.Log, in
 				m.Generate()			// сгенерировали метрики
 				m.SaveToStash()			// сохранили в карман
 				m.Clear()				// очистили объект метрик для приема новых данных
-				logger.Trace(m.Get())	// записали в лог из кармана
+				logger.Trace(json.Marshal(m.Get()))	// записали в лог из кармана
 
 				ticker = time.NewTicker(interval)
 			}
