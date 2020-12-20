@@ -2,19 +2,14 @@ package main
 
 import (
 	"fmt"
-	"time"
-	bbmetric "github.com/buildboxapp/lib/metric"
+	"runtime"
 )
 
 func main() {
-	metric := bbmetric.New(nil, nil, 10 * time.Second)
+	//var ms1 runtime.BlockProfileRecord
 
-	metric.SetConnectionIncrement()
+	ms1 := runtime.NumGoroutine()
 
-	fmt.Println(metric.Get())
-
-	t :=  10 * time.Second
-	f := t.Microseconds()
-	fmt.Println(f)
+	fmt.Println(ms1)
 	return
 }

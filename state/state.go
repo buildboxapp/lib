@@ -5,6 +5,7 @@ import (
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"math"
+	"runtime"
 )
 
 type StateHost struct {
@@ -17,6 +18,7 @@ type StateHost struct {
 	UsedCPU,
 	UsedMemory,
 	UsedDisk float64
+	Goroutines int
 }
 
 func (c *StateHost) Tick()  {
@@ -24,7 +26,6 @@ func (c *StateHost) Tick()  {
 
 	memoryStat, _ 	:= mem.VirtualMemory()
 	percentage, _ 	:= cpu.Percent(0, true)
-	//phost, _ 		:= host.Info()
 	diskStat, _ 	:= disk.Usage("/")
 
 	for _, cpupercent := range percentage {
@@ -35,7 +36,7 @@ func (c *StateHost) Tick()  {
 	c.PercentageCPU 	= math.Round(pcpu / i)
 	c.PercentageMemory 	= math.Round(memoryStat.UsedPercent)
 	c.PercentageDisk 	= math.Round(diskStat.UsedPercent)
-	//c.Info = phost
+	c.Goroutines		= runtime.NumGoroutine()
 
 	return
 }
