@@ -114,7 +114,7 @@ func (s *serviceMetric) SaveToStash() {
 	s.Stash.StateHost = s.StateHost
 	s.Stash.Connections = s.Connections
 	s.Stash.RPS = s.RPS
-	
+
 	s.Stash.Queue_AVG = s.Queue_AVG
 	s.Stash.Queue_QTL_99 = s.Queue_QTL_99
 	s.Stash.Queue_QTL_90 = s.Queue_QTL_90
@@ -132,8 +132,20 @@ func (s *serviceMetric) Clear() {
 	s.Connections = 0
 	s.connectionOpen = 0
 	s.queue = []int{}
-	s.mux.Unlock()
+	s.tpr = []time.Duration{}
 
+	s.RPS = 0
+	s.Queue_AVG = 0.0
+	s.Queue_QTL_80 = 0.0
+	s.Queue_QTL_90 = 0.0
+	s.Queue_QTL_99 = 0.0
+
+	s.TPR_AVG_MS = 0.0
+	s.TPR_QTL_MS_80 = 0.0
+	s.TPR_QTL_MS_90 = 0.0
+	s.TPR_QTL_MS_99 = 0.0
+
+	s.mux.Unlock()
 	return
 }
 
@@ -148,7 +160,6 @@ func (s *serviceMetric) Generate() {
 	var AVG_TPR, QTL_TPR_80, QTL_TPR_90, QTL_TPR_99 float32
 	s.SetState()	// получаю текущие метрики загрузки хоста
 
-
 	//////////////////////////////////////////////////////////
 	// расчитываем среднее кол-во запросо и квартили (средние значения после 80-90-99 процентов всех запросов)
 	//////////////////////////////////////////////////////////
@@ -157,11 +168,12 @@ func (s *serviceMetric) Generate() {
 	sort.Ints(s.queue)
 
 	lenQueue := len(s.queue)
-	len_Queue_QTL_80 := lenQueue * 8 / 10
-	len_Queue_QTL_90 := lenQueue * 9 / 10
-	len_Queue_QTL_99 := lenQueue * 99 / 100
 
 	if  lenQueue != 0 {
+		len_Queue_QTL_80 := lenQueue * 8 / 10
+		len_Queue_QTL_90 := lenQueue * 9 / 10
+		len_Queue_QTL_99 := lenQueue * 99 / 100
+
 		for i, v := range s.queue {
 			vall := float32(v)
 			// суммируем значения которые после 80% других
@@ -179,7 +191,12 @@ func (s *serviceMetric) Generate() {
 
 			val_Queue = val_Queue + vall
 		}
-		Queue_AVG = val_Queue / float32(lenQueue) - 1
+
+		lQ := float32(lenQueue) - 1	// проверка на 0
+		if lQ == 0 {
+			lQ = 1
+		}
+		Queue_AVG = val_Queue / lQ
 		Queue_QTL_80 = val_Queue_QTL_80 / float32(lenQueue - len_Queue_QTL_80)
 		Queue_QTL_90 = val_Queue_QTL_90 / float32(lenQueue - len_Queue_QTL_90)
 		Queue_QTL_99 = val_Queue_QTL_99 / float32(lenQueue - len_Queue_QTL_99)
@@ -190,18 +207,19 @@ func (s *serviceMetric) Generate() {
 	//////////////////////////////////////////////////////////
 
 	// сортируем список
-	timeInt := []float64{}
-	for _, v := range s.tpr {
-		timeInt = append(timeInt, float64(v.Microseconds()))
-	}
-	sort.Float64s(timeInt)
-
-	lenTPR := len(timeInt)
-	len_TPR_80 := lenTPR * 8 / 10
-	len_TPR_90 := lenTPR * 9 / 10
-	len_TPR_99 := lenTPR * 99 / 100
-
+	lenTPR := len(s.tpr)
 	if  lenTPR != 0 {
+
+		timeInt := []float64{}
+		for _, v := range s.tpr {
+			timeInt = append(timeInt, float64(v.Microseconds()))
+		}
+		sort.Float64s(timeInt)
+
+		len_TPR_80 := lenTPR * 8 / 10
+		len_TPR_90 := lenTPR * 9 / 10
+		len_TPR_99 := lenTPR * 99 / 100
+
 		for i, v := range timeInt {
 			vall := float32(v)
 			// суммируем значения которые после 80% других
@@ -219,11 +237,17 @@ func (s *serviceMetric) Generate() {
 
 			val_TPR = val_TPR + vall
 		}
-		AVG_TPR = val_Queue / float32(lenQueue) - 1
+
+		lQ := float32(lenQueue) - 1
+		if lQ == 0 {
+			lQ = 1
+		}
+		AVG_TPR = val_TPR / lQ
 		QTL_TPR_80 = val_TPR_80 / float32(lenTPR - len_TPR_80)
 		QTL_TPR_90 = val_TPR_90 / float32(lenTPR - len_TPR_90)
 		QTL_TPR_99 = val_TPR_99 / float32(lenTPR - len_TPR_99)
 	}
+
 
 	//////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////
@@ -285,22 +309,22 @@ func New(ctx context.Context, logger *bblog.Log, interval time.Duration) (metric
 }
 
 func RunMetricLogger(ctx context.Context, m ServiceMetric, logger *bblog.Log, interval time.Duration)  {
-		ticker := time.NewTicker(interval)
-		defer ticker.Stop()
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
 
-		for {
-			select {
-			case <- ctx.Done():
-				return
-			case <- ticker.C:
-				// сохраняем значение метрик в лог
-				m.Generate()			// сгенерировали метрики
-				m.SaveToStash()			// сохранили в карман
-				m.Clear()				// очистили объект метрик для приема новых данных
-				mes, _ := json.Marshal(m.Get())
-				logger.Trace(string(mes))	// записали в лог из кармана
+	for {
+		select {
+		case <- ctx.Done():
+			return
+		case <- ticker.C:
+			// сохраняем значение метрик в лог
+			m.Generate()			// сгенерировали метрики
+			m.SaveToStash()			// сохранили в карман
+			m.Clear()				// очистили объект метрик для приема новых данных
+			mes, _ := json.Marshal(m.Get())
+			logger.Trace(string(mes))	// записали в лог из кармана
 
-				ticker = time.NewTicker(interval)
-			}
+			ticker = time.NewTicker(interval)
 		}
+	}
 }
