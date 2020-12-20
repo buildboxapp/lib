@@ -21,13 +21,13 @@ var sep = string(filepath.Separator)
 
 // структура строк лог-файла. нужна для анмаршалинга
 type LogLine struct {
-	config string `json:"config"`
-	level string `json:"level"`
-	msg interface{} `json:"msg"`
-	name string `json:"name"`
-	srv string `json:"srv"`
-	time string `json:"time"`
-	uid string `json:"uid"`
+	Config string `json:"config"`
+	Level string `json:"level"`
+	Msg interface{} `json:"msg"`
+	Name string `json:"name"`
+	Srv string `json:"srv"`
+	Time string `json:"time"`
+	Uid string `json:"uid"`
 }
 
 type Log struct {
