@@ -297,9 +297,10 @@ func (c *Lib) StopByAlias(config, domain, alias string) (err error) {
 
 // перезагрузка процесса по Pid/домену
 func (c *Lib) Reload(pid string) (err error) {
+	sep := string(filepath.Separator)
+	pidDone := ""
 
 	_, fullresult, _, _ := Ps("full")
-	pidDone := ""
 
 	for domain, v1 := range fullresult {
 		for _, v := range v1 {
@@ -314,7 +315,7 @@ func (c *Lib) Reload(pid string) (err error) {
 					pidI, err := strconv.Atoi(idProcess)
 					err = Stop(pidI)
 					if err == nil {
-						RunProcess(configfile, CurrentDir(), "buildbox", "start", "services")
+						RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
 					}
 				}
 				// сохраняем обработанный пид (чтобы повторно не релоадить)
@@ -327,7 +328,7 @@ func (c *Lib) Reload(pid string) (err error) {
 						pidI, err := strconv.Atoi(idProcess)
 						err = Stop(pidI)
 						if err == nil {
-							RunProcess(configfile, CurrentDir(), "buildbox", "start", "service")
+							RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
 						}
 					}
 				}

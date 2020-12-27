@@ -71,9 +71,9 @@ func (c *Lib) ResponseJSON(w http.ResponseWriter, objResponse interface{}, statu
 }
 
 // стартуем сервис из конфига
-func (c *Lib) RunProcess(fileConfig, workdir, file, command, message string) (err error) {
+func (c *Lib) RunProcess(path, fileConfig, command, message string) (err error) {
 	var out []byte
-	sep := string(filepath.Separator)
+	//sep := string(filepath.Separator)
 
 	if fileConfig == "" {
 		fmt.Println(color.Red("ERROR!") + " Configuration file is not found.\n")
@@ -82,13 +82,10 @@ func (c *Lib) RunProcess(fileConfig, workdir, file, command, message string) (er
 	if command == "" {
 		command = "start"
 	}
-	if workdir == "" {
-		workdir = c.RootDir()
-	}
 
 	done := color.Green("OK")
 	fail := color.Red("FAIL")
-	fileStart := workdir + sep + file
+	fileStart := c.RootDir() + path
 
 	// ФИКС!
 	// проверяем путь к файлу
@@ -97,22 +94,22 @@ func (c *Lib) RunProcess(fileConfig, workdir, file, command, message string) (er
 	// поэтому если файл не существует - то читаем конфигурацию и ищем путь, в котором указан файл запуска
 	// который пришел в урле запроса на перезагрузку (api_1.0.1 и тд)
 
-	_, err = os.Open(fileStart)
-	if err != nil {
-		conf, _, err := c.ReadConf(fileConfig)
-		if err != nil {
-			return err
-		}
-		for _, v := range conf {
-			if strings.Contains(v, file) {
-				dd := strings.Split(v, sep)
-
-				//fmt.Println("dd: ", dd)
-
-				fileStart = c.RootDir() + sep + strings.Join(dd[3:], sep)
-			}
-		}
-	}
+	//_, err = os.Open(fileStart)
+	//if err != nil {
+	//	conf, _, err := c.ReadConf(fileConfig)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	for _, v := range conf {
+	//		if strings.Contains(v, file) {
+	//			dd := strings.Split(v, sep)
+	//
+	//			//fmt.Println("dd: ", dd)
+	//
+	//			fileStart = c.RootDir() + sep + strings.Join(dd[3:], sep)
+	//		}
+	//	}
+	//}
 
 	cmd := exec.Command(fileStart, command, "--config", fileConfig)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -131,7 +128,7 @@ func (c *Lib) RunProcess(fileConfig, workdir, file, command, message string) (er
 	}
 
 	fmt.Printf("%s %s (pid: %s) \n", done, message, strconv.Itoa(cmd.Process.Pid))
-	c.Logger.Info("Starting: ", message, "-", file, "(", command, ")", string(out))
+	c.Logger.Info("Starting: ", message, "-", path, "(", command, ")", string(out))
 
 	return err
 }
