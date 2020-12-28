@@ -204,7 +204,7 @@ func (c *Lib) Stop(pid int) error {
 
 // завершение всех процессов для текущей конфигурации
 // config - ид-конфигурации
-func (c *Lib) StopByConfig(config string) (err error) {
+func (c *Lib) PidsByConfig(config string) (result []string, err error) {
 
 	_, fullresult, _, _ := c.Ps("full")
 
@@ -214,17 +214,13 @@ func (c *Lib) StopByConfig(config string) (err error) {
 			configfile := v[1] // файл
 			idProcess := v[0]  // pid
 
-			pid, err := strconv.Atoi(idProcess)
-			if err != nil {
-				return fmt.Errorf("Error! Convert pid from string to int is failed.")
+			if config == configfile {
+				result = append(result, idProcess)
 			}
 
-			if config == configfile {
-				err = Stop(pid)
-			}
 			if err != nil {
-				c.Logger.Error(err, "Error stopped process: pid:", pid, ", config:", config)
-				fmt.Println("Error stopped process: pid:", pid, ", config:", config, ", err:", err)
+				c.Logger.Error(err, "Error stopped process config:", config)
+				fmt.Println("Error stopped process config:", config, ", err:", err)
 			}
 		}
 	}
@@ -232,22 +228,26 @@ func (c *Lib) StopByConfig(config string) (err error) {
 	return
 }
 
-// завершение конкретного процесса сервиса
-// config - ид-конфигурации
+// получаем строки пидов подходящих под условия, в котором:
 // domain - название проекта (домен)
 // alias - название алиас-сервиса (gui/api/proxy и тд - то, что в мап-прокси идет второй частью адреса)
-func (c *Lib) StopByAlias(config, domain, alias string) (err error) {
+// если алиас явно не задан, то он может быть получен из домена
+func (c *Lib) PidsByAlias(domain, alias string) (result []string, err error) {
 
 	if domain == "" {
 		domain = "all"
-	}
-	if config == "" {
-		config = "all"
 	}
 	if alias == "" {
 		alias = "all"
 	}
 
+	// можем в домене передать полный путь с учетом алиаса типа buildbox/gui
+	// в этом случае алиас если он явно не задан заполним значением алиаса полученного из домена
+	splitDomain := strings.Split(domain, "/")
+	if len(splitDomain) == 2 {
+		domain = splitDomain[0]
+		alias = splitDomain[1]
+	}
 	_, _, raw, _ := c.Ps("full")
 
 	// получаем pid для переданной конфигурации
@@ -266,26 +266,12 @@ func (c *Lib) StopByAlias(config, domain, alias string) (err error) {
 
 				for _, v3 := range v2 {
 					k3 := strings.Split(v3, ":")
-
-					configfile := k3[1] // файл
 					idProcess := k3[0]  // pid
-
-					pid, err := strconv.Atoi(idProcess)
-					if err != nil {
-						return fmt.Errorf("Error! Convert pid from string to int is failed.")
-					}
-
-					// пропускаем если точное сравнение и не подоходит
-					if config != "all" && configfile != config {
-						continue
-					}
-
-					// если все искючающие условиня не прошли - останавливаем процесс
-					err = Stop(pid)
+					result = append(result, v3)
 
 					if err != nil {
-						c.Logger.Error(err, "Error stopped process: pid:", pid, ", config:", config)
-						fmt.Println("Error stopped process: pid:", pid, ", config:", config, ", err:", err)
+						c.Logger.Error(err, "Error stopped process: pid:", idProcess)
+						fmt.Println("Error stopped process: pid:", idProcess, ", err:", err)
 					}
 				}
 			}
@@ -296,52 +282,52 @@ func (c *Lib) StopByAlias(config, domain, alias string) (err error) {
 }
 
 // перезагрузка процесса по Pid/домену
-func (c *Lib) Reload(pid string) (err error) {
-	sep := string(filepath.Separator)
-	pidDone := ""
-
-	_, fullresult, _, _ := Ps("full")
-
-	for domain, v1 := range fullresult {
-		for _, v := range v1 {
-			configfile := v[1] // файл
-			idProcess := v[0]  // pid
-
-			// pid не передан, перезагружаем все процессы
-			if pid == "all" {
-
-				// если данный пид ранее не обрабатывался, то рестартуем процесс
-				if !strings.Contains(pidDone, idProcess) {
-					pidI, err := strconv.Atoi(idProcess)
-					err = Stop(pidI)
-					if err == nil {
-						RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
-					}
-				}
-				// сохраняем обработанный пид (чтобы повторно не релоадить)
-				pidDone = pidDone + "," + idProcess
-
-			} else {
-				// перезагружаем только переданный pid
-				if !strings.Contains(pidDone, idProcess) {
-					if pid == idProcess || pid == domain {
-						pidI, err := strconv.Atoi(idProcess)
-						err = Stop(pidI)
-						if err == nil {
-							RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
-						}
-					}
-				}
-				// сохраняем обработанный пид (чтобы повторно не релоадить)
-				pidDone = pidDone + "," + pid
-
-			}
-		}
-
-	}
-
-	return err
-}
+//func (c *Lib) Reload(pid string) (err error) {
+//	sep := string(filepath.Separator)
+//	pidDone := ""
+//
+//	_, fullresult, _, _ := Ps("full")
+//
+//	for domain, v1 := range fullresult {
+//		for _, v := range v1 {
+//			configfile := v[1] // файл
+//			idProcess := v[0]  // pid
+//
+//			// pid не передан, перезагружаем все процессы
+//			if pid == "all" {
+//
+//				// если данный пид ранее не обрабатывался, то рестартуем процесс
+//				if !strings.Contains(pidDone, idProcess) {
+//					pidI, err := strconv.Atoi(idProcess)
+//					err = Stop(pidI)
+//					if err == nil {
+//						RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
+//					}
+//				}
+//				// сохраняем обработанный пид (чтобы повторно не релоадить)
+//				pidDone = pidDone + "," + idProcess
+//
+//			} else {
+//				// перезагружаем только переданный pid
+//				if !strings.Contains(pidDone, idProcess) {
+//					if pid == idProcess || pid == domain {
+//						pidI, err := strconv.Atoi(idProcess)
+//						err = Stop(pidI)
+//						if err == nil {
+//							RunProcess(CurrentDir()+sep+"buildbox", configfile, "start", "service")
+//						}
+//					}
+//				}
+//				// сохраняем обработанный пид (чтобы повторно не релоадить)
+//				pidDone = pidDone + "," + pid
+//
+//			}
+//		}
+//
+//	}
+//
+//	return err
+//}
 
 // уничтожить все процессы
 func (c *Lib) Destroy() (err error) {

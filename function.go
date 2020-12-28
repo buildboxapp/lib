@@ -71,11 +71,10 @@ func (c *Lib) ResponseJSON(w http.ResponseWriter, objResponse interface{}, statu
 }
 
 // стартуем сервис из конфига
-func (c *Lib) RunProcess(path, fileConfig, command, message string) (err error) {
+func (c *Lib) RunProcess(path, config, command, message string) (err error) {
 	var out []byte
-	//sep := string(filepath.Separator)
 
-	if fileConfig == "" {
+	if config == "" {
 		fmt.Println(color.Red("ERROR!") + " Configuration file is not found.\n")
 		return
 	}
@@ -85,6 +84,9 @@ func (c *Lib) RunProcess(path, fileConfig, command, message string) (err error) 
 
 	done := color.Green("OK")
 	fail := color.Red("FAIL")
+
+	// убираем префикс доступа к файлу через http - /buildbox/gui
+	path = strings.ReplaceAll(path, "/buildbox/gui", "")
 	fileStart := c.RootDir() + path
 
 	// ФИКС!
@@ -111,7 +113,7 @@ func (c *Lib) RunProcess(path, fileConfig, command, message string) (err error) 
 	//	}
 	//}
 
-	cmd := exec.Command(fileStart, command, "--config", fileConfig)
+	cmd := exec.Command(fileStart, command, "--config", config)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	//fmt.Println("cmd: ",cmd)
