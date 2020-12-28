@@ -89,34 +89,8 @@ func (c *Lib) RunProcess(path, config, command, message string) (err error) {
 	path = strings.ReplaceAll(path, "/buildbox/gui", "")
 	fileStart := c.RootDir() + path
 
-	// ФИКС!
-	// проверяем путь к файлу
-	// если мы перезагружае сервисы у запущенных из проекта подпроектов, то файлы запуска подпроектов
-	// находятся в директории проекта (у подпроекта нет своих файлов как правило)
-	// поэтому если файл не существует - то читаем конфигурацию и ищем путь, в котором указан файл запуска
-	// который пришел в урле запроса на перезагрузку (api_1.0.1 и тд)
-
-	//_, err = os.Open(fileStart)
-	//if err != nil {
-	//	conf, _, err := c.ReadConf(fileConfig)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	for _, v := range conf {
-	//		if strings.Contains(v, file) {
-	//			dd := strings.Split(v, sep)
-	//
-	//			//fmt.Println("dd: ", dd)
-	//
-	//			fileStart = c.RootDir() + sep + strings.Join(dd[3:], sep)
-	//		}
-	//	}
-	//}
-
 	cmd := exec.Command(fileStart, command, "--config", config)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	//fmt.Println("cmd: ",cmd)
 
 	//stdout, err := cmd.StdoutPipe()
 	//if err != nil {

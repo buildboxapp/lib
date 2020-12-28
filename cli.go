@@ -133,7 +133,7 @@ func (c *Lib) Ps(format string) (pids []string, services map[string][][]string, 
 							if err == nil && len(PidRegistry) != 0 {
 
 								if format == "terminal" {
-									fmt.Printf("%-80s\n", color.Yellow("Running proxy: ")+color.Yellow(conf["port_proxy"]))
+									fmt.Printf("%-80s\n", color.Yellow("Running proxy: ")+color.Yellow(conf["port_proxy"])+" - "+file.Name())
 								}
 
 								domain := ""
@@ -178,7 +178,6 @@ func (c *Lib) Ps(format string) (pids []string, services map[string][][]string, 
 			if format == "full" {
 				slice[kf] = append(slice[kf], k3)
 			}
-
 		}
 
 	}
