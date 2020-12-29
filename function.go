@@ -85,8 +85,6 @@ func (c *Lib) RunProcess(path, config, command, message string) (err error) {
 	done := color.Green("OK")
 	fail := color.Red("FAIL")
 
-	// убираем префикс доступа к файлу через http - /buildbox/gui
-	path = strings.ReplaceAll(path, "/buildbox/gui", "")
 	fileStart := c.RootDir() + path
 
 	cmd := exec.Command(fileStart, command, "--config", config)
