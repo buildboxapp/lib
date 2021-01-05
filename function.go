@@ -85,9 +85,7 @@ func (c *Lib) RunProcess(path, config, command, message string) (err error) {
 	done := color.Green("OK")
 	fail := color.Red("FAIL")
 
-	fileStart := c.RootDir() + path
-
-	cmd := exec.Command(fileStart, command, "--config", config)
+	cmd := exec.Command(path, command, "--config", config)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	//stdout, err := cmd.StdoutPipe()
@@ -97,7 +95,7 @@ func (c *Lib) RunProcess(path, config, command, message string) (err error) {
 	err = cmd.Start()
 	if err != nil {
 		fmt.Printf("%s Starting %s: %s\n%s", fail, message, err, string(out))
-		c.Logger.Error(err, "from starting: ", message, "-", fileStart, "(", command, ")", string(out))
+		c.Logger.Error(err, "from starting: ", message, "-", path, "(", command, ")", string(out))
 		return err
 	}
 
