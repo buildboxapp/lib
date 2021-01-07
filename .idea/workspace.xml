@@ -21,8 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exported.go" beforeDir="false" afterPath="$PROJECT_DIR$/exported.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/function.go" beforeDir="false" afterPath="$PROJECT_DIR$/function.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -177,9 +175,9 @@
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
     <state width="1750" height="392" key="GridCell.Tab.1.right/0.0.1792.1120@0.0.1792.1120" timestamp="1608638765689" />
-    <state x="415" y="46" width="1269" height="1016" key="find.popup" timestamp="1606917722557">
+    <state x="415" y="46" width="1269" height="1016" key="find.popup" timestamp="1609849411209">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state x="415" y="46" width="1269" height="1016" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1606917722557" />
+    <state x="415" y="46" width="1269" height="1016" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1609849411209" />
   </component>
 </project>
