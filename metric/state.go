@@ -1,4 +1,4 @@
-package state
+package metric
 
 import (
 	"github.com/shirou/gopsutil/cpu"
