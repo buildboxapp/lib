@@ -20,7 +20,7 @@
       <path>
         <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
         <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="BRANCH:v2.0" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:v1.1" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </select>
   </component>
@@ -134,7 +134,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="v2.0" />
+                        <option value="v1.1" />
                       </list>
                     </value>
                   </entry>

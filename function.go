@@ -288,7 +288,7 @@ func PanicOnErr(err error) {
 	}
 }
 
-func UUID() (result string, err error) {
+func UUID() (result string) {
 	stUUID := uuid.NewV4()
-	return stUUID.String(), err
+	return stUUID.String()
 }
