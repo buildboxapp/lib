@@ -22,12 +22,6 @@
     <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cli.go" beforeDir="false" afterPath="$PROJECT_DIR$/cli.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exported.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/files.go" beforeDir="false" afterPath="$PROJECT_DIR$/files.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/function.go" beforeDir="false" afterPath="$PROJECT_DIR$/function.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http.go" beforeDir="false" afterPath="$PROJECT_DIR$/http.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/models.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

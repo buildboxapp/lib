@@ -96,7 +96,7 @@ func Ls() (result []map[string]string, err error) {
 // pid - список пидов,
 // full - полный слайс значений как для терминала, но в структуре
 // raw - слайс всех полученных PidRegistry ответов
-func Ps(format string) (pids []string, services map[string][][]string, raw []map[string]map[string][]string, err error) {
+func Ps(format, portProxy string) (pids []string, services map[string][][]string, raw []map[string]map[string][]string, err error) {
 	var PidRegistry = map[string]map[string][]string{}
 	var finish = map[string][]string{}
 	sep := string(filepath.Separator)
@@ -132,36 +132,38 @@ func Ps(format string) (pids []string, services map[string][][]string, raw []map
 
 					if err == nil {
 						// смотрим настройки на наличик возможно досутпного прокси
-						if conf["hosts"] != "" && conf["port_proxy"] != "" {
+						if portProxy != "" {
+							portProxy = "80"
+						}
 
-							// получаем список доступных на данном прокси запущенных приложений
-							// ПЕРЕДЕЛАТЬ!!! слишком много реализаций Curl - сделать ревью!!!! убрать дубли и вынести в lib
-							_, err = Curl("GET", "http://localhost:"+conf["port_proxy"]+"/pid", "", &PidRegistry, map[string]string{}, "", "")
+						// получаем список доступных на данном прокси запущенных приложений
+						// ПЕРЕДЕЛАТЬ!!! слишком много реализаций Curl - сделать ревью!!!! убрать дубли и вынести в lib
+						_, err = Curl("GET", "http://localhost:"+portProxy+"/pid", "", &PidRegistry, map[string]string{}, "", "")
 
-							// просто слайс всех PidRegistry
-							raw = append(raw, PidRegistry)
+						// просто слайс всех PidRegistry
+						raw = append(raw, PidRegistry)
 
-							if err == nil && len(PidRegistry) != 0 {
+						if err == nil && len(PidRegistry) != 0 {
 
-								if format == "terminal" {
-									fmt.Printf("%-80s\n", color.Yellow("Running proxy: ")+color.Yellow(conf["port_proxy"])+" - "+file.Name())
-								}
+							if format == "terminal" {
+								fmt.Printf("%-80s\n", color.Yellow("Running proxy: ")+color.Yellow(conf["port_proxy"])+" - "+file.Name())
+							}
 
-								domain := ""
-								for k, v := range PidRegistry {
-									domain = k
-									for k1, v1 := range v {
-										domain = k + "/" + k1
+							domain := ""
+							for k, v := range PidRegistry {
+								domain = k
+								for k1, v1 := range v {
+									domain = k + "/" + k1
 
-										// добавляем в структуру полученне значения
-										// бывает указаны в несколькхи конфигах порты прокси, чтобы не дублировались пишем сначала в структуру
-										if _, found := finish[domain]; !found {
-											finish[domain] = v1
-										}
+									// добавляем в структуру полученне значения
+									// бывает указаны в несколькхи конфигах порты прокси, чтобы не дублировались пишем сначала в структуру
+									if _, found := finish[domain]; !found {
+										finish[domain] = v1
 									}
 								}
 							}
 						}
+
 					}
 				}
 			}
@@ -214,9 +216,9 @@ func Stop(pid int) (err error) {
 
 // завершение всех процессов для текущей конфигурации
 // config - ид-конфигурации
-func PidsByConfig(config string) (result []string, err error) {
+func PidsByConfig(config, portProxy string) (result []string, err error) {
 
-	_, fullresult, _, _ := Ps("full")
+	_, fullresult, _, _ := Ps("full", portProxy)
 
 	// получаем pid для переданной конфигурации
 	for _, v1 := range fullresult {
@@ -309,7 +311,7 @@ func PathByConfig(config, domain, alias string) (result string, err error) {
 // domain - название проекта (домен)
 // alias - название алиас-сервиса (gui/api/proxy и тд - то, что в мап-прокси идет второй частью адреса)
 // если алиас явно не задан, то он может быть получен из домена
-func PidsByAlias(domain, alias string) (result []string, err error) {
+func PidsByAlias(domain, alias, portProxy string) (result []string, err error) {
 
 	if domain == "" {
 		domain = "all"
@@ -325,7 +327,7 @@ func PidsByAlias(domain, alias string) (result []string, err error) {
 		domain = splitDomain[0]
 		alias = splitDomain[1]
 	}
-	_, _, raw, _ := Ps("full")
+	_, _, raw, _ := Ps("full", portProxy)
 
 	// получаем pid для переданной конфигурации
 	for _, pidRegistry := range raw {
@@ -362,8 +364,8 @@ func PidsByAlias(domain, alias string) (result []string, err error) {
 }
 
 // уничтожить все процессы
-func Destroy() (err error) {
-	pids, _, _, _ := Ps("pid")
+func Destroy(portProxy string) (err error) {
+	pids, _, _, _ := Ps("pid", portProxy)
 	for _, v := range pids {
 		pi, err := strconv.Atoi(v)
 		if err == nil {
