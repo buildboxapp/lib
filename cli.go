@@ -13,6 +13,7 @@ import (
 	"log"
 )
 
+
 const sep = string(os.PathSeparator)
 
 // просмотр кофигурационных файлов

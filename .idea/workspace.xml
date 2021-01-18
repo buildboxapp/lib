@@ -16,12 +16,17 @@
         <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </expand>
-    <select />
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:v2.0" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli.go" beforeDir="false" afterPath="$PROJECT_DIR$/cli.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +128,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="v2.0" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -181,5 +198,9 @@
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
     <state x="415" y="46" width="1269" height="1016" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1610914297085" />
+    <state x="0" y="25" width="895" height="1095" key="git4idea.branch.GitSmartOperationDialog" timestamp="1610961787764">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="0" y="25" width="895" height="1095" key="git4idea.branch.GitSmartOperationDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1610961787764" />
   </component>
 </project>
