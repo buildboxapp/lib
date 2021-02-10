@@ -265,6 +265,11 @@ func PathByConfig(config, domain, alias string) (result string, err error) {
 		result = cfg["service_exec"]
 		return result, nil
 	}
+	// если передана версия сервиса, то это предпочтительнее
+	if cfg["service_version"] != "" {
+		result = cfg["service_version_pointsrc"]
+		return result, nil
+	}
 
 	// если это приложение
 	if cfg["app_version_pointsrc"] != "" {
