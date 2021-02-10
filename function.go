@@ -180,7 +180,9 @@ func ReadConfAction(currentDir, configuration string, defConfig bool) (configPat
 				if err == nil {
 					d := conf["default"]
 					if d == "checked" {
-						return obj.Name(), err
+						// удаляем разрешение
+						file := strings.Split(obj.Name(), ".")
+						return file[0], err
 					}
 				}
 			} else {

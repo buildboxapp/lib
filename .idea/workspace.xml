@@ -27,6 +27,9 @@
   <component name="ChangeListManager">
     <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/function.go" beforeDir="false" afterPath="$PROJECT_DIR$/function.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/log/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/log/logger.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/metric/metric.go" beforeDir="false" afterPath="$PROJECT_DIR$/metric/metric.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,14 +157,10 @@
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
-    <state x="696" y="400" key="#Go_Modules" timestamp="1602926166845">
+    <state x="360" y="219" width="1071" height="707" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1611848888013">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state x="696" y="400" key="#Go_Modules/0.0.1792.1120@0.0.1792.1120" timestamp="1602926166845" />
-    <state x="360" y="222" width="1071" height="700" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1602926193179">
-      <screen x="0" y="0" width="1792" height="1120" />
-    </state>
-    <state x="360" y="222" width="1071" height="700" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1602926193179" />
+    <state x="360" y="219" width="1071" height="707" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1611848888013" />
     <state width="1750" height="308" key="GridCell.Tab.0.bottom" timestamp="1610913653603">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
@@ -194,10 +193,10 @@
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
     <state width="1750" height="392" key="GridCell.Tab.1.right/0.0.1792.1120@0.0.1792.1120" timestamp="1608638765689" />
-    <state x="415" y="46" width="1269" height="1016" key="find.popup" timestamp="1610914297085">
+    <state x="415" y="46" width="1269" height="1016" key="find.popup" timestamp="1610967065661">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state x="415" y="46" width="1269" height="1016" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1610914297085" />
+    <state x="415" y="46" width="1269" height="1016" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1610967065661" />
     <state x="0" y="25" width="895" height="1095" key="git4idea.branch.GitSmartOperationDialog" timestamp="1610961787764">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
