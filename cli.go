@@ -309,42 +309,42 @@ func Destroy(portProxy string) (err error) {
 }
 
 // инициализация приложения
-func Install() (err error) {
-
-	// 1. задание переменных окружения
-	currentDir, err := CurrentDir()
-	if err != nil {
-		return
-	}
-	os.Setenv("BBPATH", currentDir)
-
-	//var rootPath = os.Getenv("BBPATH")
-
-	//fmt.Println(rootPath)
-	//path, _ := os.LookupEnv("BBPATH")
-	//fmt.Print("BBPATH: ", path)
-
-	// 2. копирование файла запуска в /etc/bin
-	//src := "./buildbox"
-	//dst := "/usr/bin/buildbox"
-	//
-	//in, err := os.Open(src)
-	//if err != nil {
-	//	return err
-	//}
-	//defer in.Close()
-	//
-	//out, err := os.Create(dst)
-	//if err != nil {
-	//	return err
-	//}
-	//defer out.Close()
-	//
-	//_, err = io.Copy(out, in)
-	//if err != nil {
-	//	return err
-	//}
-	//return out.Close()
-
-	return err
-}
+//func Install() (err error) {
+//
+//	// 1. задание переменных окружения
+//	currentDir, err := CurrentDir()
+//	if err != nil {
+//		return
+//	}
+//	os.Setenv("BBPATH", currentDir)
+//
+//	//var rootPath = os.Getenv("BBPATH")
+//
+//	//fmt.Println(rootPath)
+//	//path, _ := os.LookupEnv("BBPATH")
+//	//fmt.Print("BBPATH: ", path)
+//
+//	// 2. копирование файла запуска в /etc/bin
+//	//src := "./buildbox"
+//	//dst := "/usr/bin/buildbox"
+//	//
+//	//in, err := os.Open(src)
+//	//if err != nil {
+//	//	return err
+//	//}
+//	//defer in.Close()
+//	//
+//	//out, err := os.Create(dst)
+//	//if err != nil {
+//	//	return err
+//	//}
+//	//defer out.Close()
+//	//
+//	//_, err = io.Copy(out, in)
+//	//if err != nil {
+//	//	return err
+//	//}
+//	//return out.Close()
+//
+//	return err
+//}
