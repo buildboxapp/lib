@@ -174,6 +174,9 @@ func ReadConfAction(rootDir, configuration string, defConfig bool) (configPath s
 	// пробегаем текущую папку и считаем совпадание признаков
 	for _, obj := range objects {
 		nextPath = rootDir + sep + obj.Name()
+
+		//fmt.Println(nextPath)
+
 		if obj.IsDir() {
 			configPath, err = ReadConfAction(nextPath, configuration, defConfig)
 			if configPath != "" {
@@ -181,14 +184,12 @@ func ReadConfAction(rootDir, configuration string, defConfig bool) (configPath s
 			}
 		} else {
 			if defConfig { // проверяем на получение конфигурации по-умолчанию
-				if strings.Contains(nextPath, ".cfg") {
-					confJson, err := ReadFile(nextPath)
-					err = json.Unmarshal([]byte(confJson), &conf)
-					if err == nil {
-						d := conf["default"]
-						if d == "checked" {
-							return nextPath, err
-						}
+				confJson, err := ReadFile(nextPath)
+				err = json.Unmarshal([]byte(confJson), &conf)
+				if err == nil {
+					d := conf["default"]
+					if d == "checked" {
+						return nextPath, err
 					}
 				}
 			} else {
