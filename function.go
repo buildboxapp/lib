@@ -127,8 +127,8 @@ func ReadConf(configfile string) (conf map[string]string, confjson string, err e
 	}
 
 	// дополняем название файла раcширением
-	if !strings.Contains(configfile, ".json") {
-		configfile += ".json"
+	if !strings.Contains(configfile, ".cfg") {
+		configfile += ".cfg"
 	}
 
 	rootDir, err := RootDir()
@@ -156,37 +156,43 @@ func ReadConf(configfile string) (conf map[string]string, confjson string, err e
 
 // получаем путь от переданной директории
 // если defConfig = true - значит ищем конфигурацию по-умолчанию
-func ReadConfAction(currentDir, configuration string, defConfig bool) (configPath string, err error) {
+func ReadConfAction(rootDir, configuration string, defConfig bool) (configPath string, err error) {
 	var conf map[string]string
-	directory, _ := os.Open(currentDir)
+	var nextPath string
+	directory, _ := os.Open(rootDir)
 	objects, err := directory.Readdir(-1)
 	if err != nil {
 		return "", err
 	}
 
+	defer func() {
+		//fmt.Println("nextPath:", nextPath)
+		configPath = strings.Replace(configPath, ".json", "", -1)
+		configPath = strings.Replace(configPath, ".go", "", -1)
+	}()
+
 	// пробегаем текущую папку и считаем совпадание признаков
 	for _, obj := range objects {
-		nextPath := currentDir + string(filepath.Separator) + obj.Name()
+		nextPath = rootDir + sep + obj.Name()
 		if obj.IsDir() {
-			configPath, err = ReadConfAction(nextPath+string(filepath.Separator)+"ini", configuration, defConfig)
+			configPath, err = ReadConfAction(nextPath, configuration, defConfig)
 			if configPath != "" {
 				return configPath, err // поднимает результат наверх
 			}
-
 		} else {
 			if defConfig { // проверяем на получение конфигурации по-умолчанию
-				confJson, err := ReadFile(nextPath)
-				err = json.Unmarshal([]byte(confJson), &conf)
-				if err == nil {
-					d := conf["default"]
-					if d == "checked" {
-						// удаляем разрешение
-						file := strings.Split(obj.Name(), ".")
-						return file[0], err
+				if strings.Contains(nextPath, ".cfg") {
+					confJson, err := ReadFile(nextPath)
+					err = json.Unmarshal([]byte(confJson), &conf)
+					if err == nil {
+						d := conf["default"]
+						if d == "checked" {
+							return nextPath, err
+						}
 					}
 				}
 			} else {
-				if obj.Name() == configuration {
+				if strings.Contains(obj.Name(), configuration) {
 					return nextPath, err
 				}
 			}
