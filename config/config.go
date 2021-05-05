@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type config struct {}
+type Config struct {}
 
 var warning = color.Red("[Fail]")
 
@@ -19,7 +19,7 @@ var warning = color.Red("[Fail]")
 // 1. поднимаемся до корневой директории
 // 2. от нее ищем полный путь до конфига
 // 3. читаем по этому пути
-func (c *config) Load(configname string, cfg interface{}) (err error) {
+func (c *Config) Load(configname string, cfg interface{}) (err error) {
 
 	if err := envconfig.Process("", &cfg); err != nil {
 		fmt.Printf("%s Error load default enviroment: %s\n", warning, err)
@@ -41,7 +41,7 @@ func (c *config) Load(configname string, cfg interface{}) (err error) {
 
 // получаем путь от переданной директории
 // если defConfig = true - значит ищем конфигурацию по-умолчанию
-func (c *config) FullPathConfig(rootDir, configuration string) (configPath string, err error) {
+func (c *Config) FullPathConfig(rootDir, configuration string) (configPath string, err error) {
 	var nextPath string
 	directory, err := os.Open(rootDir)
 	if err != nil {
@@ -97,7 +97,7 @@ func (c *config) FullPathConfig(rootDir, configuration string) (configPath strin
 }
 
 // Читаем конфигурация по заданному полному пути
-func (c *config) Read(configfile string) (err error) {
+func (c *Config) Read(configfile string) (err error) {
 	configfileSplit := strings.Split(configfile, ".")
 	if len(configfile) == 0 {
 		return fmt.Errorf("%s", "Error. Configfile is empty.")
