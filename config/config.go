@@ -12,10 +12,6 @@ import (
 
 type config struct {}
 
-type Config interface {
-	Load(configname string, cfg interface{}) (err error)
-}
-
 var warning = color.Red("[Fail]")
 
 // читаем конфигурации
