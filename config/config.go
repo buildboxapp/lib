@@ -18,10 +18,7 @@ var warning = color.Red("[Fail]")
 // 1. поднимаемся до корневой директории
 // 2. от нее ищем полный путь до конфига
 // 3. читаем по этому пути
-func Load(configname string) (err error) {
-
-	var cfg interface{}
-
+func Load(configname string, cfg interface{}) (err error) {
 	if err := envconfig.Process("", &cfg); err != nil {
 		fmt.Printf("%s Error load default enviroment: %s\n", warning, err)
 		os.Exit(1)
