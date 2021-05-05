@@ -13,7 +13,7 @@ import (
 type config struct {}
 
 type Config interface {
-	Load(configname string) (err error)
+	Load(configname string, cfg interface{}) (err error)
 }
 
 var warning = color.Red("[Fail]")
