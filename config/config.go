@@ -109,7 +109,6 @@ func (c *config) Read(configfile string) (err error) {
 	if len(configfileSplit) == 1 {
 		configfile = configfile + ".cfg"
 	}
-
 	if _, err = toml.DecodeFile(configfile, &c); err != nil {
 		fmt.Printf("%s Error: %s (configfile: %s)\n", warning, err, configfile)
 	}
