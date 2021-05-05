@@ -17,4 +17,5 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v3.20.11+incompatible
 	github.com/sirupsen/logrus v1.7.0
+	github.com/urfave/cli v1.22.5
 )

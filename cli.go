@@ -10,9 +10,10 @@ import (
 
 	"github.com/labstack/gommon/color"
 
+	"github.com/urfave/cli"
+
 	"log"
 )
-
 
 const sep = string(os.PathSeparator)
 
@@ -348,3 +349,50 @@ func Destroy(portProxy string) (err error) {
 //
 //	return err
 //}
+
+// обраатываем параметры с консоли и вызываем переданую функцию
+func RunServiceFuncCLI(funcStart func(configfile, dir, port string))  {
+	var err error
+
+	appCLI := cli.NewApp()
+	appCLI.Usage = "Demon Buildbox Proxy started"
+	appCLI.Commands = []cli.Command{
+		{
+			Name:"start", ShortName: "",
+			Usage: "Start single Buildbox-service process",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:	"config, c",
+					Usage:	"Название файла конфигурации, с которым будет запущен сервис",
+					Value:	"default",
+				},
+				cli.StringFlag{
+					Name:	"dir, d",
+					Usage:	"Путь к шаблонам",
+					Value:	"default",
+				},
+				cli.StringFlag{
+					Name:	"port, p",
+					Usage:	"Порт, на котором запустить процесс",
+					Value:	"",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				configfile := c.String("config")
+				port := c.String("port")
+				dir := c.String("dir")
+
+				if dir == "default" {
+					dir, err = RootDir()
+				}
+
+				funcStart(configfile, dir, port)
+				return nil
+			},
+		},
+	}
+	appCLI.Run(os.Args)
+
+	return
+}
+
