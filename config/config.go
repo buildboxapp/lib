@@ -10,8 +10,7 @@ import (
 	"strings"
 )
 
-type Config struct {}
-
+const sep = string(os.PathSeparator)
 var warning = color.Red("[Fail]")
 
 // читаем конфигурации
@@ -19,7 +18,9 @@ var warning = color.Red("[Fail]")
 // 1. поднимаемся до корневой директории
 // 2. от нее ищем полный путь до конфига
 // 3. читаем по этому пути
-func (c *Config) Load(configname string, cfg interface{}) (err error) {
+func Load(configname string) (err error) {
+
+	var cfg interface{}
 
 	if err := envconfig.Process("", &cfg); err != nil {
 		fmt.Printf("%s Error load default enviroment: %s\n", warning, err)
@@ -30,18 +31,18 @@ func (c *Config) Load(configname string, cfg interface{}) (err error) {
 	rootDir, err := lib.RootDir()
 
 	// 2.
-	confidPath, err := c.FullPathConfig(rootDir, configname)
+	confidPath, err := fullPathConfig(rootDir, configname)
 	fmt.Println(confidPath)
 
 	// 3.
-	c.Read(confidPath)
+	read(confidPath, cfg)
 
 	return err
 }
 
 // получаем путь от переданной директории
 // если defConfig = true - значит ищем конфигурацию по-умолчанию
-func (c *Config) FullPathConfig(rootDir, configuration string) (configPath string, err error) {
+func fullPathConfig(rootDir, configuration string) (configPath string, err error) {
 	var nextPath string
 	directory, err := os.Open(rootDir)
 	if err != nil {
@@ -65,7 +66,7 @@ func (c *Config) FullPathConfig(rootDir, configuration string) (configPath strin
 
 			// не входим в скрытые папки
 			if dirName[:1] != "." {
-				configPath, err = c.FullPathConfig(nextPath, configuration)
+				configPath, err = fullPathConfig(nextPath, configuration)
 				if configPath != "" {
 					return configPath, err // поднимает результат наверх
 				}
@@ -97,7 +98,7 @@ func (c *Config) FullPathConfig(rootDir, configuration string) (configPath strin
 }
 
 // Читаем конфигурация по заданному полному пути
-func (c *Config) Read(configfile string) (err error) {
+func read(configfile string, cfg interface{}) (err error) {
 	configfileSplit := strings.Split(configfile, ".")
 	if len(configfile) == 0 {
 		return fmt.Errorf("%s", "Error. Configfile is empty.")
@@ -105,7 +106,7 @@ func (c *Config) Read(configfile string) (err error) {
 	if len(configfileSplit) == 1 {
 		configfile = configfile + ".cfg"
 	}
-	if _, err = toml.DecodeFile(configfile, &c); err != nil {
+	if _, err = toml.DecodeFile(configfile, &cfg); err != nil {
 		fmt.Printf("%s Error: %s (configfile: %s)\n", warning, err, configfile)
 	}
 

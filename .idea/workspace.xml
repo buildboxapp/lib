@@ -25,60 +25,7 @@
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/utils.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/.travis.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/COMPATIBLE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/COPYING" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/Makefile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/decode.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/decode_meta.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/doc.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/encode.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/encoding_types.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/encoding_types_1.1.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/lex.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/parse.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/session.vim" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/type_check.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/BurntSushi/toml/type_fields.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/.travis.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/MAINTAINERS" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/doc.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/env_os.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/env_syscall.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/envconfig.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/go.mod" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vendor/github.com/kelseyhightower/envconfig/usage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/context/.travis.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/context/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/context/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/context/context.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/context/gotrack.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/errors/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/errors/errors.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/errors/hide.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/hex/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/hex/hex.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/hidden/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/hidden/hidden.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/ops/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/getlantern/ops/ops.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/go-stack/stack/.travis.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/go-stack/stack/LICENSE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/go-stack/stack/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/go-stack/stack/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/go-stack/stack/stack.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/modules.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/modules.txt" afterDir="false" />
-    </list>
+    <list default="true" id="c07e78e5-bd82-4010-be7d-efbd537c6bed" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
