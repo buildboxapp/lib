@@ -18,21 +18,29 @@ var warning = color.Red("[Fail]")
 // 1. поднимаемся до корневой директории
 // 2. от нее ищем полный путь до конфига
 // 3. читаем по этому пути
-func Load(configname string, cfg interface{}) (err error) {
-	if err := envconfig.Process("", &cfg); err != nil {
+func Load(configname string, pointToCfg interface{}) (err error) {
+	if err := envconfig.Process("", pointToCfg); err != nil {
 		fmt.Printf("%s Error load default enviroment: %s\n", warning, err)
 		os.Exit(1)
 	}
 
 	// 1.
 	rootDir, err := lib.RootDir()
+	if err != nil {
+		return err
+	}
 
 	// 2.
 	confidPath, err := fullPathConfig(rootDir, configname)
-	fmt.Println(confidPath)
+	if err != nil {
+		return err
+	}
 
 	// 3.
-	read(confidPath, cfg)
+	err = read(confidPath, pointToCfg)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -103,7 +111,7 @@ func read(configfile string, cfg interface{}) (err error) {
 	if len(configfileSplit) == 1 {
 		configfile = configfile + ".cfg"
 	}
-	if _, err = toml.DecodeFile(configfile, &cfg); err != nil {
+	if _, err = toml.DecodeFile(configfile, cfg); err != nil {
 		fmt.Printf("%s Error: %s (configfile: %s)\n", warning, err, configfile)
 	}
 
