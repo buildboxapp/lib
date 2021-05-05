@@ -21,7 +21,8 @@ var warning = color.Red("[Fail]")
 func Load(configname string, pointToCfg interface{}) (err error) {
 	if err := envconfig.Process("", pointToCfg); err != nil {
 		fmt.Printf("%s Error load default enviroment: %s\n", warning, err)
-		os.Exit(1)
+		err = fmt.Errorf("Error load default enviroment: %s", err)
+		return err
 	}
 
 	// 1.
@@ -51,21 +52,18 @@ func fullPathConfig(rootDir, configuration string) (configPath string, err error
 	var nextPath string
 	directory, err := os.Open(rootDir)
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	defer directory.Close()
 
 	objects, err := directory.Readdir(-1)
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 
 	// пробегаем текущую папку и считаем совпадание признаков
 	for _, obj := range objects {
 		nextPath = rootDir + sep + obj.Name()
-
 		if obj.IsDir() {
 			dirName := obj.Name()
 
