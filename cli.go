@@ -377,7 +377,7 @@ func RunServiceFuncCLI(funcStart func(configfile, dir, port, mode string))  {
 					Value:	"",
 				},
 				cli.StringFlag{
-					Name:	"mode, d",
+					Name:	"mode, m",
 					Usage:	"Доп.режимы запуска: debug (логирования stdout в файл)",
 					Value:	"",
 				},
