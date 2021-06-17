@@ -309,6 +309,7 @@ func New(logsDir, level, uid, name, srv, config string, intervalReload, interval
 	var output io.Writer
 	var err error
 	var mode os.FileMode
+	m := sync.Mutex{}
 
 	datefile := time.Now().Format("2006.01.02")
 	logName := datefile + "_" + srv + "_" + uid + ".log"
@@ -338,5 +339,6 @@ func New(logsDir, level, uid, name, srv, config string, intervalReload, interval
 		IntervalReload:     intervalReload,
 		IntervalClearFiles: intervalClearFiles,
 		PeriodSaveFiles:    periodSaveFiles,
+		mux: &m,
 	}
 }
