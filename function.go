@@ -76,13 +76,13 @@ func RunProcess(path, config, command, mode string) (pid int, err error) {
 
 	cmd = exec.Command(path, command, "--config", config)
 	if mode == "debug" {
-		t := time.Now().Format("2006.01.02_15-04-05")
+		t := time.Now().Format("2006.01.02-15-04-05")
 		s := strings.Split(path, sep)
 		srv := s[len(s)-1]
 		CreateDir("debug" + sep + srv, 0777)
 		config_name := strings.Replace(config, "-", "", -1)
 
-		f, _ := os.Create(  "debug" + sep + srv + sep + fmt.Sprint(t) + "_" + config_name + ".log")
+		f, _ := os.Create(  "debug" + sep + srv + sep + config_name + "_" + fmt.Sprint(t) + ".log")
 
 		cmd.Stdout = f
 		cmd.Stderr = f
