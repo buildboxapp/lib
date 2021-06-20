@@ -152,9 +152,9 @@
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
-    <state x="597" y="315" width="597" height="490" key="find.popup" timestamp="1620720426340">
+    <state x="523" y="133" width="597" height="759" key="find.popup" timestamp="1623952708332">
       <screen x="0" y="0" width="1792" height="1120" />
     </state>
-    <state x="597" y="315" width="597" height="490" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1620720426340" />
+    <state x="523" y="133" width="597" height="759" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1623952708332" />
   </component>
 </project>
