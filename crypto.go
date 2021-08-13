@@ -19,7 +19,18 @@ import (
 //	fmt.Println(msg) // Hello World
 //}
 
-func addBase64Padding(value string) string {
+type Crypto interface {
+	Pad(src []byte) []byte
+	Encrypt(key []byte, text string) (string, error)
+	Decrypt(key []byte, text string) (string, error)
+}
+
+type libCrypto struct {
+	Http
+}
+
+
+func (c *libCrypto) addBase64Padding(value string) string {
 	m := len(value) % 4
 	if m != 0 {
 		value += strings.Repeat("=", 4-m)
@@ -28,17 +39,11 @@ func addBase64Padding(value string) string {
 	return value
 }
 
-func removeBase64Padding(value string) string {
+func (c *libCrypto) removeBase64Padding(value string) string {
 	return strings.Replace(value, "=", "", -1)
 }
 
-func Pad(src []byte) []byte {
-	padding := aes.BlockSize - len(src)%aes.BlockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(src, padtext...)
-}
-
-func unpad(src []byte) ([]byte, error) {
+func (c *libCrypto) unpad(src []byte) ([]byte, error) {
 	length := len(src)
 	unpadding := int(src[length-1])
 
@@ -49,13 +54,19 @@ func unpad(src []byte) ([]byte, error) {
 	return src[:(length - unpadding)], nil
 }
 
-func Encrypt(key []byte, text string) (string, error) {
+func (c *libCrypto) Pad(src []byte) []byte {
+	padding := aes.BlockSize - len(src)%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
+}
+
+func (c *libCrypto) Encrypt(key []byte, text string) (string, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
-	msg := Pad([]byte(text))
+	msg := c.Pad([]byte(text))
 	ciphertext := make([]byte, aes.BlockSize+len(msg))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
@@ -64,17 +75,17 @@ func Encrypt(key []byte, text string) (string, error) {
 
 	cfb := cipher.NewCFBEncrypter(block, iv)
 	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(msg))
-	finalMsg := removeBase64Padding(base64.URLEncoding.EncodeToString(ciphertext))
+	finalMsg := c.removeBase64Padding(base64.URLEncoding.EncodeToString(ciphertext))
 	return finalMsg, nil
 }
 
-func Decrypt(key []byte, text string) (string, error) {
+func (c *libCrypto) Decrypt(key []byte, text string) (string, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
-	decodedMsg, err := base64.URLEncoding.DecodeString(addBase64Padding(text))
+	decodedMsg, err := base64.URLEncoding.DecodeString(c.addBase64Padding(text))
 	if err != nil {
 		return "", err
 	}
@@ -89,7 +100,7 @@ func Decrypt(key []byte, text string) (string, error) {
 	cfb := cipher.NewCFBDecrypter(block, iv)
 	cfb.XORKeyStream(msg, msg)
 
-	unpadMsg, err := unpad(msg)
+	unpadMsg, err := c.unpad(msg)
 	if err != nil {
 		return "", err
 	}

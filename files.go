@@ -10,8 +10,26 @@ import (
 	"strings"
 )
 
+type Files interface {
+	CreateFile(path string) (err error)
+	WriteFile(path string, data []byte) (err error)
+	ReadFile(path string) (result string, err error)
+	CopyFolder(source string, dest string) (err error)
+	CopyFile(source string, dest string) (err error)
+	CreateDir(path string, mode os.FileMode) (err error)
+	DeleteFile(path string) (err error)
+	MoveFile(source string, dest string) (err error)
+	Zip(source, target string) (err error)
+	Unzip(archive, target string) (err error)
+}
+
+type libFiles struct {
+	Files
+}
+
+
 // Создаем файл по указанному пути если его нет
-func CreateFile(path string) (err error) {
+func (f *libFiles) CreateFile(path string) (err error) {
 
 	// detect if file exists
 	_, err = os.Stat(path)
@@ -33,10 +51,10 @@ func CreateFile(path string) (err error) {
 }
 
 // пишем в файл по указанному пути
-func WriteFile(path string, data []byte) (err error) {
+func (f *libFiles) WriteFile(path string, data []byte) (err error) {
 
 	// detect if file exists and create
-	err = CreateFile(path)
+	err = f.CreateFile(path)
 	if err != nil {
 		return
 	}
@@ -64,7 +82,7 @@ func WriteFile(path string, data []byte) (err error) {
 }
 
 // читаем файл. (отключил: всегда в рамках рабочей диретории)
-func ReadFile(path string) (result string, err error) {
+func (f *libFiles) ReadFile(path string) (result string, err error) {
 	// если не от корня, то подставляем текущую директорию
 	//if path[:1] != "/" {
 	//	path = CurrentDir() + "/" + path
@@ -87,7 +105,7 @@ func ReadFile(path string) (result string, err error) {
 }
 
 // копирование папки
-func CopyFolder(source string, dest string) (err error) {
+func (f *libFiles) CopyFolder(source string, dest string) (err error) {
 
 	sourceinfo, err := os.Stat(source)
 	if err != nil {
@@ -107,12 +125,12 @@ func CopyFolder(source string, dest string) (err error) {
 		destinationfilepointer := dest + "/" + obj.Name()
 
 		if obj.IsDir() {
-			err = CopyFolder(sourcefilepointer, destinationfilepointer)
+			err = f.CopyFolder(sourcefilepointer, destinationfilepointer)
 			if err != nil {
 				fmt.Println(err)
 			}
 		} else {
-			err = CopyFile(sourcefilepointer, destinationfilepointer)
+			err = f.CopyFile(sourcefilepointer, destinationfilepointer)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -123,7 +141,7 @@ func CopyFolder(source string, dest string) (err error) {
 }
 
 // копирование файла
-func CopyFile(source string, dest string) (err error) {
+func (f *libFiles) CopyFile(source string, dest string) (err error) {
 	sourcefile, err := os.Open(source)
 	if err != nil {
 		return err
@@ -148,7 +166,7 @@ func CopyFile(source string, dest string) (err error) {
 }
 
 // создание папки
-func CreateDir(path string, mode os.FileMode) (err error) {
+func (f *libFiles) CreateDir(path string, mode os.FileMode) (err error) {
 	if mode == 0 {
 		mode = 0711
 	}
@@ -160,7 +178,7 @@ func CreateDir(path string, mode os.FileMode) (err error) {
 	return nil
 }
 
-func DeleteFile(path string) (err error) {
+func (f *libFiles) DeleteFile(path string) (err error) {
 	err = os.Remove(path)
 	if err != nil {
 		return
@@ -169,12 +187,12 @@ func DeleteFile(path string) (err error) {
 	return nil
 }
 
-func MoveFile(source string, dest string) (err error) {
-	err = CopyFile(source, dest)
+func (f *libFiles) MoveFile(source string, dest string) (err error) {
+	err = f.CopyFile(source, dest)
 	if err != nil {
 		return
 	}
-	err = DeleteFile(source)
+	err = f.DeleteFile(source)
 	if err != nil {
 		return
 	}
@@ -183,7 +201,7 @@ func MoveFile(source string, dest string) (err error) {
 }
 
 // zip("/tmp/documents", "/tmp/backup.zip")
-func Zip(source, target string) (err error) {
+func (f *libFiles) Zip(source, target string) (err error) {
 	zipfile, err := os.Create(target)
 	if err != nil {
 		return err
@@ -245,7 +263,7 @@ func Zip(source, target string) (err error) {
 }
 
 // unzip("/tmp/report-2015.zip", "/tmp/reports/")
-func Unzip(archive, target string) (err error) {
+func (f *libFiles) Unzip(archive, target string) (err error) {
 	reader, err := zip.OpenReader(archive)
 	if err != nil {
 		return err

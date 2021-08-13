@@ -18,8 +18,23 @@ import (
 	"time"
 )
 
+type Function interface {
+	ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error)
+	RunProcess(path, config, command, mode string) (pid int, err error)
+	ReadConf(configfile string) (conf map[string]string, confjson string, err error)
+	RootDir() (rootDir string, err error)
+	RootDirAction(currentDir string) (rootDir string, err error)
+	Hash(str string) (result string, err error)
+	PanicOnErr(err error)
+	UUID() (result string)
+}
+
+type libFunction struct {
+	Function
+}
+
 // если status не из списка, то вставляем статус - 501 и Descraption из статуса
-func ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error) {
+func (f *libFunction) ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error) {
 
 	if w == nil {
 		return
@@ -65,8 +80,10 @@ func ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string,
 }
 
 // стартуем сервис из конфига
-func RunProcess(path, config, command, mode string) (pid int, err error) {
+func (f *libFunction) RunProcess(path, config, command, mode string) (pid int, err error) {
 	var cmd *exec.Cmd
+	var l libFiles
+
 	if config == "" {
 		return 0, fmt.Errorf("%s", "Configuration file is not found")
 	}
@@ -74,14 +91,13 @@ func RunProcess(path, config, command, mode string) (pid int, err error) {
 		command = "start"
 	}
 
-	fmt.Println(config, mode)
-
 	cmd = exec.Command(path, command, "--config", config, "--mode", mode)
 	if mode == "debug" {
 		t := time.Now().Format("2006.01.02-15-04-05")
 		s := strings.Split(path, sep)
 		srv := s[len(s)-1]
-		CreateDir("debug" + sep + srv, 0777)
+
+		err = l.CreateDir("debug" + sep + srv, 0777)
 		config_name := strings.Replace(config, "-", "", -1)
 
 		f, _ := os.Create(  "debug" + sep + srv + sep + config_name + "_" + fmt.Sprint(t) + ".log")
@@ -103,7 +119,7 @@ func RunProcess(path, config, command, mode string) (pid int, err error) {
 // читаем файл конфигурации и возвращаем
 // объект конфига, джейсон-конфига и ошибку
 // ЗАГЛУШКА ДЛЯ PS и LS
-func ReadConf(configfile string) (conf map[string]string, confjson string, err error) {
+func (f *libFunction) ReadConf(configfile string) (conf map[string]string, confjson string, err error) {
 	//
 	//	if configfile == "" {
 	//		return nil, "", err
@@ -141,14 +157,14 @@ func ReadConf(configfile string) (conf map[string]string, confjson string, err e
 // входные: currentDir - текущая папка, level - глубина (насколько уровеней вверх проверяем)
 // вниз не проверяем, потому что вряд ли кто будет запускать выше корневой папки
 // но если надо, то можно и доделать
-func RootDir() (rootDir string, err error) {
+func (f *libFunction) RootDir() (rootDir string, err error) {
 	file, err := filepath.Abs(os.Args[0])
 	if err != nil {
 		return
 	}
 
 	cdir := path.Dir(file)
-	rootDir, err = RootDirAction(cdir)
+	rootDir, err = f.RootDirAction(cdir)
 	if err != nil {
 		fmt.Println("Error calculation RootDir. File: ", file, "; Error: ", err)
 	}
@@ -157,7 +173,7 @@ func RootDir() (rootDir string, err error) {
 }
 
 // получаем путь от переданной директории
-func RootDirAction(currentDir string) (rootDir string, err error) {
+func (f *libFunction) RootDirAction(currentDir string) (rootDir string, err error) {
 
 	// признаки рутовой директории - наличие файла buildbox (стартового (не меняется)
 	// наличие директорий certs + dbs
@@ -186,7 +202,7 @@ func RootDirAction(currentDir string) (rootDir string, err error) {
 		sc := strings.Split(currentDir, string(filepath.Separator))
 		scc := sc[:len(sc)-1]
 		currentDir = strings.Join(scc, string(filepath.Separator))
-		rootDir, err = RootDirAction(currentDir)
+		rootDir, err = f.RootDirAction(currentDir)
 	} else {
 		rootDir = currentDir
 	}
@@ -194,7 +210,7 @@ func RootDirAction(currentDir string) (rootDir string, err error) {
 	return rootDir, err
 }
 
-func Hash(str string) (result string, err error) {
+func (f *libFunction) Hash(str string) (result string, err error) {
 	h := sha1.New()
 	h.Write([]byte(str))
 	result = hex.EncodeToString(h.Sum(nil))
@@ -202,14 +218,14 @@ func Hash(str string) (result string, err error) {
 	return
 }
 
-func PanicOnErr(err error) {
+func (f *libFunction) PanicOnErr(err error) {
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
 	}
 }
 
-func UUID() (result string) {
+func (f *libFunction) UUID() (result string) {
 	stUUID := uuid.NewV4()
 	return stUUID.String()
 }

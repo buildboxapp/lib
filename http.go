@@ -9,36 +9,20 @@ import (
 	"strings"
 )
 
+type Http interface {
+	Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error)
+}
+
+type libHttp struct {
+	Http
+}
+
 // всегде возвращает результат в интерфейс + ошибка (полезно для внешних запросов с неизвестной структурой)
 // сериализуем в объект, при передаче ссылки на переменную типа
-func Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, urlapi, urlgui string) (result interface{}, err error) {
+func (h *libHttp) Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error) {
 	var mapValues map[string]string
 	var req *http.Request
 	client := &http.Client{}
-
-	if len(urlapi) > 0 {
-		if urlapi[len(urlapi)-1:] != "/" {
-			urlapi = urlapi + "/"
-		}
-	}
-	if len(urlgui) > 0 {
-		if urlgui[len(urlgui)-1:] != "/" {
-			urlgui = urlgui + "/"
-		}
-	}
-
-	// дополняем путем до API если не передан вызов внешнего запроса через http://
-	if urlc == "" {
-		urlc = urlapi
-	} else {
-		if urlc[:4] != "http" {
-			if urlc[:1] != "/" {
-				urlc = urlapi + urlc
-			} else {
-				urlc = urlgui + urlc[1:]
-			}
-		}
-	}
 
 	if method == "" {
 		method = "POST"
@@ -47,10 +31,6 @@ func Curl(method, urlc, bodyJSON string, response interface{}, headers map[strin
 	method = strings.Trim(method, " ")
 	values := url.Values{}
 	actionType := ""
-
-	//fmt.Println("lib/http.go; Curl; urlc " , urlc, "")
-	//fmt.Println("c.State", c.State)
-	//c.Logger.Info("lib/http.go; Curl; urlc " , urlc, "; bodyJSON: ", bodyJSON, "; method: ", method)
 
 	// если в гете мы передали еще и json (его добавляем в строку запроса)
 	// только если в запросе не указаны передаваемые параметры
@@ -103,6 +83,13 @@ func Curl(method, urlc, bodyJSON string, response interface{}, headers map[strin
 	if len(headers) > 0 {
 		for k, v := range headers {
 			req.Header.Add(k, v)
+		}
+	}
+
+	// дополянем куками назначенными для данного запроса
+	if cookies != nil {
+		for _, v := range cookies {
+			req.AddCookie(v)
 		}
 	}
 
