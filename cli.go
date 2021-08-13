@@ -17,15 +17,30 @@ import (
 
 const sep = string(os.PathSeparator)
 
+type Cli interface {
+	Ls() (result []map[string]string, err error)
+	Ps(format, portProxy string) (pids []string, services map[string][][]string, raw []map[string]map[string][]string, err error)
+	Stop(pid int) (err error)
+	PidsByConfig(config, portProxy string) (result []string, err error)
+	PidsByAlias(domain, alias, portProxy string) (result []string, err error)
+	Destroy(portProxy string) (err error)
+	RunServiceFuncCLI(funcStart func(configfile, dir, port, mode string))
+}
+
+type libCli struct {
+	Cli
+}
+
 // просмотр кофигурационных файлов
-func Ls() (result []map[string]string, err error) {
+func (c *libCli) Ls() (result []map[string]string, err error) {
+	var f Function
 
 	fmt.Println("List configuration:")
 	fmt.Printf("%-29s%-17s%-17s%-17s%-16s%-30s%-60s\n", color.Green("DOMAIN"), color.Green("API"), color.Green("GUI"), color.Green("PROXY"), color.Green("APP"), color.Green("CACHE"), color.Green("CONFIG ID"))
 	sep := string(filepath.Separator)
 
 	// может работать много прокси, поэтому обходим конфигурационные файлы и ищем рабочие прокси
-	rootDir, err := RootDir()
+	rootDir, err := f.RootDir()
 	if err != nil {
 		return
 	}
@@ -49,7 +64,7 @@ func Ls() (result []map[string]string, err error) {
 			}
 
 			for _, file := range files {
-				conf, _, err := ReadConf(file.Name())
+				conf, _, err := f.ReadConf(file.Name())
 				result = append(result, conf)
 
 				if err == nil {
@@ -98,9 +113,12 @@ func Ls() (result []map[string]string, err error) {
 // pid - список пидов,
 // full - полный слайс значений как для терминала, но в структуре
 // raw - слайс всех полученных PidRegistry ответов
-func Ps(format, portProxy string) (pids []string, services map[string][][]string, raw []map[string]map[string][]string, err error) {
+func (c *libCli) Ps(format, portProxy string) (pids []string, services map[string][][]string, raw []map[string]map[string][]string, err error) {
 	var PidRegistry = map[string]map[string][]string{}
 	var finish = map[string][]string{}
+	var f Function
+	var h Http
+
 	sep := string(filepath.Separator)
 
 	if format == "terminal" {
@@ -108,7 +126,7 @@ func Ps(format, portProxy string) (pids []string, services map[string][][]string
 	}
 
 	// может работать много прокси, поэтому обходим конфигурационные файлы и ищем рабочие прокси
-	rootDir, err := RootDir()
+	rootDir, err := f.RootDir()
 	if err != nil {
 		return
 	}
@@ -130,7 +148,7 @@ func Ps(format, portProxy string) (pids []string, services map[string][][]string
 			if err == nil {
 
 				for _, file := range files {
-					conf, _, err := ReadConf(file.Name())
+					conf, _, err := f.ReadConf(file.Name())
 
 					if err == nil {
 						// смотрим настройки на наличик возможно досутпного прокси
@@ -140,7 +158,7 @@ func Ps(format, portProxy string) (pids []string, services map[string][][]string
 
 						// получаем список доступных на данном прокси запущенных приложений
 						// ПЕРЕДЕЛАТЬ!!! слишком много реализаций Curl - сделать ревью!!!! убрать дубли и вынести в lib
-						_, err = Curl("GET", "http://localhost:"+portProxy+"/pid", "", &PidRegistry, map[string]string{}, nil)
+						_, err = h.Curl("GET", "http://localhost:"+portProxy+"/pid", "", &PidRegistry, map[string]string{}, nil)
 
 						// просто слайс всех PidRegistry
 						raw = append(raw, PidRegistry)
@@ -205,7 +223,7 @@ func Ps(format, portProxy string) (pids []string, services map[string][][]string
 }
 
 // завершение процесса
-func Stop(pid int) (err error) {
+func (c *libCli) Stop(pid int) (err error) {
 	var sig os.Signal
 	sig = os.Kill
 	p, err := os.FindProcess(pid)
@@ -218,9 +236,8 @@ func Stop(pid int) (err error) {
 
 // завершение всех процессов для текущей конфигурации
 // config - ид-конфигурации
-func PidsByConfig(config, portProxy string) (result []string, err error) {
-
-	_, fullresult, _, _ := Ps("full", portProxy)
+func (c *libCli) PidsByConfig(config, portProxy string) (result []string, err error) {
+	_, fullresult, _, _ := c.Ps("full", portProxy)
 
 	// получаем pid для переданной конфигурации
 	for _, v1 := range fullresult {
@@ -245,7 +262,7 @@ func PidsByConfig(config, portProxy string) (result []string, err error) {
 // domain - название проекта (домен)
 // alias - название алиас-сервиса (gui/api/proxy и тд - то, что в мап-прокси идет второй частью адреса)
 // если алиас явно не задан, то он может быть получен из домена
-func PidsByAlias(domain, alias, portProxy string) (result []string, err error) {
+func (c *libCli) PidsByAlias(domain, alias, portProxy string) (result []string, err error) {
 
 	if domain == "" {
 		domain = "all"
@@ -261,7 +278,7 @@ func PidsByAlias(domain, alias, portProxy string) (result []string, err error) {
 		domain = splitDomain[0]
 		alias = splitDomain[1]
 	}
-	_, _, raw, _ := Ps("full", portProxy)
+	_, _, raw, _ := c.Ps("full", portProxy)
 
 	// получаем pid для переданной конфигурации
 	for _, pidRegistry := range raw {
@@ -298,12 +315,12 @@ func PidsByAlias(domain, alias, portProxy string) (result []string, err error) {
 }
 
 // уничтожить все процессы
-func Destroy(portProxy string) (err error) {
-	pids, _, _, _ := Ps("pid", portProxy)
+func (c *libCli) Destroy(portProxy string) (err error) {
+	pids, _, _, _ := c.Ps("pid", portProxy)
 	for _, v := range pids {
 		pi, err := strconv.Atoi(v)
 		if err == nil {
-			Stop(pi)
+			c.Stop(pi)
 		}
 	}
 	return err
@@ -351,8 +368,9 @@ func Destroy(portProxy string) (err error) {
 //}
 
 // обраатываем параметры с консоли и вызываем переданую функцию
-func RunServiceFuncCLI(funcStart func(configfile, dir, port, mode string))  {
+func (c *libCli) RunServiceFuncCLI(funcStart func(configfile, dir, port, mode string))  {
 	var err error
+	var f Function
 
 	appCLI := cli.NewApp()
 	appCLI.Usage = "Demon Buildbox Proxy started"
@@ -389,7 +407,7 @@ func RunServiceFuncCLI(funcStart func(configfile, dir, port, mode string))  {
 				mode := c.String("mode")
 
 				if dir == "default" {
-					dir, err = RootDir()
+					dir, err = f.RootDir()
 				}
 
 				funcStart(configfile, dir, port, mode)
