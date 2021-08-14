@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/labstack/gommon/color"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 
 type Http interface {
 	Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error)
+	AddressProxy(addressProxy, interval string) (port string)
 }
 
 type libHttp struct {
@@ -116,4 +118,28 @@ func (h *libHttp) Curl(method, urlc, bodyJSON string, response interface{}, head
 	//json.Unmarshal([]byte(responseString), &result)
 
 	return responseString, err
+}
+
+func (h *libHttp) AddressProxy(addressProxy, interval string) (port string) {
+	fail := color.Red("[Fail]")
+	urlProxy := ""
+
+	if addressProxy[:len(addressProxy)-1] != "/" {
+		addressProxy = addressProxy + "/"
+	}
+
+	// если автоматическая настройка портов
+	if addressProxy != "" && interval != "" {
+		var portDataAPI Response
+		// запрашиваем порт у указанного прокси-сервера
+		urlProxy = addressProxy + "port?interval=" + interval
+		h.Curl("GET", urlProxy, "", &portDataAPI, map[string]string{}, nil)
+		port = fmt.Sprint(portDataAPI.Data)
+	}
+
+	if port == "" {
+		fmt.Print(fail, " Port APP-service is null. Servive not running.\n")
+	}
+
+	return port
 }
