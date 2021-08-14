@@ -117,12 +117,12 @@ func AddressProxy(addressProxy, interval string) (port string, err error) {
 	fail := color.Red("[Fail]")
 	urlProxy := ""
 
-	if addressProxy[:len(addressProxy)-1] != "/" {
-		addressProxy = addressProxy + "/"
-	}
-
 	// если автоматическая настройка портов
 	if addressProxy != "" && interval != "" {
+		if addressProxy[len(addressProxy)-1:] != "/" {
+			addressProxy = addressProxy + "/"
+		}
+
 		var portDataAPI models.Response
 		// запрашиваем порт у указанного прокси-сервера
 		urlProxy = addressProxy + "port?interval=" + interval
