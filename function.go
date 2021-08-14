@@ -196,7 +196,7 @@ func RootDirAction(currentDir string) (rootDir string, err error) {
 	return rootDir, err
 }
 
-func Hash(str string) (result string, err error) {
+func Hash(str string) (result string) {
 	h := sha1.New()
 	h.Write([]byte(str))
 	result = hex.EncodeToString(h.Sum(nil))
@@ -214,4 +214,29 @@ func PanicOnErr(err error) {
 func UUID() (result string) {
 	stUUID := uuid.NewV4()
 	return stUUID.String()
+}
+
+// удаляем элемент из слайса
+func RemoveElementFromData(p *models.ResponseData, i int) bool {
+
+	if (i < len(p.Data)){
+		p.Data = append(p.Data[:i], p.Data[i+1:]...)
+	} else {
+		//log.Warning("Error! Position invalid (", i, ")")
+		return false
+	}
+
+	return true
+}
+
+// экранируем "
+// fmt.Println(jsonEscape(`dog "fish" cat`))
+// output: dog \"fish\" cat
+func JsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+	return s[1:len(s)-1]
 }
