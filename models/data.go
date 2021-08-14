@@ -24,7 +24,7 @@ type Attribute struct {
 type Response struct {
 	Data   	interface{} 	`json:"data"`
 	Status 	RestStatus    	`json:"status"`
-	//Metrics Metrics 		`json:"metrics"`
+	Metrics Metrics 		`json:"metrics"`
 }
 
 type ResponseData struct {

@@ -37,7 +37,7 @@ func ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string,
 
 	objResp := &models.Response{}
 	if error != nil {
-		errMessage.Error = fmt.Sprint(error)
+		errMessage.Error = error
 	}
 
 	// Metrics
