@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/buildboxapp/lib/models"
 	"github.com/labstack/gommon/color"
 	"io/ioutil"
 	"net/http"
@@ -10,18 +11,10 @@ import (
 	"strings"
 )
 
-type Http interface {
-	Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error)
-	AddressProxy(addressProxy, interval string) (port string)
-}
-
-type libHttp struct {
-	Http
-}
 
 // всегде возвращает результат в интерфейс + ошибка (полезно для внешних запросов с неизвестной структурой)
 // сериализуем в объект, при передаче ссылки на переменную типа
-func (h *libHttp) Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error) {
+func Curl(method, urlc, bodyJSON string, response interface{}, headers map[string]string, cookies []*http.Cookie) (result interface{}, err error) {
 	var mapValues map[string]string
 	var req *http.Request
 	client := &http.Client{}
@@ -120,7 +113,7 @@ func (h *libHttp) Curl(method, urlc, bodyJSON string, response interface{}, head
 	return responseString, err
 }
 
-func (h *libHttp) AddressProxy(addressProxy, interval string) (port string) {
+func AddressProxy(addressProxy, interval string) (port string, err error) {
 	fail := color.Red("[Fail]")
 	urlProxy := ""
 
@@ -130,16 +123,17 @@ func (h *libHttp) AddressProxy(addressProxy, interval string) (port string) {
 
 	// если автоматическая настройка портов
 	if addressProxy != "" && interval != "" {
-		var portDataAPI Response
+		var portDataAPI models.Response
 		// запрашиваем порт у указанного прокси-сервера
 		urlProxy = addressProxy + "port?interval=" + interval
-		h.Curl("GET", urlProxy, "", &portDataAPI, map[string]string{}, nil)
+		Curl("GET", urlProxy, "", &portDataAPI, map[string]string{}, nil)
 		port = fmt.Sprint(portDataAPI.Data)
 	}
 
 	if port == "" {
+		err = fmt.Errorf("%s", "Port APP-service is null. Servive not running.")
 		fmt.Print(fail, " Port APP-service is null. Servive not running.\n")
 	}
 
-	return port
+	return port, err
 }

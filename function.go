@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/buildboxapp/lib/models"
 	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"os/exec"
@@ -18,44 +19,30 @@ import (
 	"time"
 )
 
-type Function interface {
-	ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error)
-	RunProcess(path, config, command, mode string) (pid int, err error)
-	ReadConf(configfile string) (conf map[string]string, confjson string, err error)
-	RootDir() (rootDir string, err error)
-	RootDirAction(currentDir string) (rootDir string, err error)
-	Hash(str string) (result string, err error)
-	PanicOnErr(err error)
-	UUID() (result string)
-}
-
-type libFunction struct {
-	Function
-}
 
 // если status не из списка, то вставляем статус - 501 и Descraption из статуса
-func (f *libFunction) ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error) {
+func ResponseJSON(w http.ResponseWriter, objResponse interface{}, status string, error error, metrics interface{}) (err error) {
 
 	if w == nil {
 		return
 	}
 
-	errMessage := RestStatus{}
-	st, found := StatusCode[status]
+	errMessage := models.RestStatus{}
+	st, found := models.StatusCode[status]
 	if found {
 		errMessage = st
 	} else {
-		errMessage = StatusCode["NotStatus"]
+		errMessage = models.StatusCode["NotStatus"]
 	}
 
-	objResp := &Response{}
+	objResp := &models.Response{}
 	if error != nil {
 		errMessage.Error = fmt.Sprint(error)
 	}
 
 	// Metrics
 	b1, _ := json.Marshal(metrics)
-	var metricsR Metrics
+	var metricsR models.Metrics
 	json.Unmarshal(b1, &metricsR)
 	if metrics != nil {
 		objResp.Metrics = metricsR
@@ -80,9 +67,8 @@ func (f *libFunction) ResponseJSON(w http.ResponseWriter, objResponse interface{
 }
 
 // стартуем сервис из конфига
-func (f *libFunction) RunProcess(path, config, command, mode string) (pid int, err error) {
+func RunProcess(path, config, command, mode string) (pid int, err error) {
 	var cmd *exec.Cmd
-	var l libFiles
 
 	if config == "" {
 		return 0, fmt.Errorf("%s", "Configuration file is not found")
@@ -97,7 +83,7 @@ func (f *libFunction) RunProcess(path, config, command, mode string) (pid int, e
 		s := strings.Split(path, sep)
 		srv := s[len(s)-1]
 
-		err = l.CreateDir("debug" + sep + srv, 0777)
+		err = CreateDir("debug" + sep + srv, 0777)
 		config_name := strings.Replace(config, "-", "", -1)
 
 		f, _ := os.Create(  "debug" + sep + srv + sep + config_name + "_" + fmt.Sprint(t) + ".log")
@@ -119,7 +105,7 @@ func (f *libFunction) RunProcess(path, config, command, mode string) (pid int, e
 // читаем файл конфигурации и возвращаем
 // объект конфига, джейсон-конфига и ошибку
 // ЗАГЛУШКА ДЛЯ PS и LS
-func (f *libFunction) ReadConf(configfile string) (conf map[string]string, confjson string, err error) {
+func ReadConf(configfile string) (conf map[string]string, confjson string, err error) {
 	//
 	//	if configfile == "" {
 	//		return nil, "", err
@@ -157,14 +143,14 @@ func (f *libFunction) ReadConf(configfile string) (conf map[string]string, confj
 // входные: currentDir - текущая папка, level - глубина (насколько уровеней вверх проверяем)
 // вниз не проверяем, потому что вряд ли кто будет запускать выше корневой папки
 // но если надо, то можно и доделать
-func (f *libFunction) RootDir() (rootDir string, err error) {
+func RootDir() (rootDir string, err error) {
 	file, err := filepath.Abs(os.Args[0])
 	if err != nil {
 		return
 	}
 
 	cdir := path.Dir(file)
-	rootDir, err = f.RootDirAction(cdir)
+	rootDir, err = RootDirAction(cdir)
 	if err != nil {
 		fmt.Println("Error calculation RootDir. File: ", file, "; Error: ", err)
 	}
@@ -173,7 +159,7 @@ func (f *libFunction) RootDir() (rootDir string, err error) {
 }
 
 // получаем путь от переданной директории
-func (f *libFunction) RootDirAction(currentDir string) (rootDir string, err error) {
+func RootDirAction(currentDir string) (rootDir string, err error) {
 
 	// признаки рутовой директории - наличие файла buildbox (стартового (не меняется)
 	// наличие директорий certs + dbs
@@ -202,7 +188,7 @@ func (f *libFunction) RootDirAction(currentDir string) (rootDir string, err erro
 		sc := strings.Split(currentDir, string(filepath.Separator))
 		scc := sc[:len(sc)-1]
 		currentDir = strings.Join(scc, string(filepath.Separator))
-		rootDir, err = f.RootDirAction(currentDir)
+		rootDir, err = RootDirAction(currentDir)
 	} else {
 		rootDir = currentDir
 	}
@@ -210,7 +196,7 @@ func (f *libFunction) RootDirAction(currentDir string) (rootDir string, err erro
 	return rootDir, err
 }
 
-func (f *libFunction) Hash(str string) (result string, err error) {
+func Hash(str string) (result string, err error) {
 	h := sha1.New()
 	h.Write([]byte(str))
 	result = hex.EncodeToString(h.Sum(nil))
@@ -218,14 +204,14 @@ func (f *libFunction) Hash(str string) (result string, err error) {
 	return
 }
 
-func (f *libFunction) PanicOnErr(err error) {
+func PanicOnErr(err error) {
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
 	}
 }
 
-func (f *libFunction) UUID() (result string) {
+func UUID() (result string) {
 	stUUID := uuid.NewV4()
 	return stUUID.String()
 }

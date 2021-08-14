@@ -1,10 +1,5 @@
 package models
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 type Data struct {
 	Uid        		string               `json:"uid"`
 	Id         		string               `json:"id"`
@@ -30,34 +25,6 @@ type Response struct {
 	Data   	interface{} 	`json:"data"`
 	Status 	RestStatus    	`json:"status"`
 	//Metrics Metrics 		`json:"metrics"`
-}
-
-type RestStatus struct {
-	Description string `json:"description"`
-	Status      int    `json:"status"`
-	Code        string `json:"code"`
-	Error       error  `json:"error"`
-}
-
-func (r RestStatus) MarshalJSON() ([]byte, error) {
-	type RestStatusJson struct {
-		Description string `json:"description"`
-		Status      int    `json:"status"`
-		Code        string `json:"code"`
-		Error       string `json:"error"`
-	}
-
-	var n = RestStatusJson{}
-	n.Description = r.Description
-	n.Status = r.Status
-	n.Code = r.Code
-	n.Error = fmt.Sprint(r.Error)
-	if r.Error == nil {
-		n.Error = ""
-	}
-
-	res, err := json.Marshal(n)
-	return res, err
 }
 
 type ResponseData struct {

@@ -12,3 +12,9 @@ type Pong struct {
 	Https bool `json:"https"`
 }
 
+type Hosts struct {
+	Host     string `json:"host"`
+	PortFrom int    `json:"portfrom"`
+	PortTo   int    `json:"portto"`
+	Protocol string `json:"protocol"`
+}
