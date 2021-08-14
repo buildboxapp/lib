@@ -49,3 +49,91 @@ type Metrics struct {
 	PageFrom		int `json:"page_from"`
 	PageTo			int `json:"page_to"`
 }
+
+// возвращаем необходимый значение атрибута для объекта если он есть, инае пусто
+// а также из заголовка объекта
+func (p *Data) Attr(name, element string) (result string, found bool) {
+
+
+	if _, found := p.Attributes[name]; found {
+
+		// фикс для тех объектов, на которых добавлено скрытое поле Uid
+		if name == "uid" {
+			return p.Uid, true
+		}
+
+		switch element {
+		case "src":
+			return p.Attributes[name].Src, true
+		case "value":
+			return p.Attributes[name].Value, true
+		case "tpls":
+			return p.Attributes[name].Tpls, true
+		case "rev":
+			return p.Attributes[name].Rev, true
+		case "status":
+			return p.Attributes[name].Status, true
+		case "uid":
+			return p.Uid, true
+		case "source":
+			return p.Source, true
+		case "id":
+			return p.Id, true
+		case "title":
+			return p.Title, true
+		case "type":
+			return p.Type, true
+		}
+	} else {
+		switch name {
+		case "uid":
+			return p.Uid, true
+		case "source":
+			return p.Source, true
+		case "id":
+			return p.Id, true
+		case "title":
+			return p.Title, true
+		case "type":
+			return p.Type, true
+		}
+	}
+	return "", false
+}
+
+// заменяем значение аттрибутов в объекте профиля
+func (p *Data) AttrSet(name, element, value string) bool  {
+	g := Attribute{}
+
+	for k, v := range p.Attributes {
+		if k == name {
+			g = v
+		}
+	}
+
+	switch element {
+	case "src":
+		g.Src = value
+	case "value":
+		g.Value = value
+	case "tpls":
+		g.Tpls = value
+	case "rev":
+		g.Rev = value
+	case "status":
+		g.Status = value
+	}
+
+	f := p.Attributes
+
+	for k, _ := range f {
+		if k == name {
+			f[k] = g
+			return true
+		}
+	}
+
+
+	return false
+}
+
