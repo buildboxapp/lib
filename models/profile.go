@@ -13,7 +13,7 @@ type ProfileData struct {
 	Status 			string `json:"status"` 	// - src поля Status в профиле (иногда необходимо для доп.фильтрации)
 	Raw	       		[]Data `json:"raw"`	// объект пользователя (нужен при сборки проекта для данного юзера при добавлении прав на базу)
 	Tables      	[]Data `json:"tables"`
-	Roles       	[]Data `json:"roles"`
+	Roles       	map[string]string `json:"roles"`
 	Homepage		string `json:"homepage"`
 	Maket			string `json:"maket"`
 	UpdateFlag 		bool `json:"update_flag"`
