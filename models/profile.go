@@ -21,7 +21,7 @@ type ProfileData struct {
 	UpdateFlag 		bool `json:"update_flag"`
 	UpdateData 		[]Data `json:"update_data"`
 	CurrentRole 	Data `json:"current_role"`
-	CurrentProfile 	Data `json:" "`
+	CurrentProfile 	Data `json:"current_profile"`
 	Navigator   	[]*Items `json:"navigator"`
 }
 
