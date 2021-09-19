@@ -1,28 +1,26 @@
 package models
 
 type ProfileData struct {
-	Hash       		string
-	Email       	string
-	Uid         	string
-	ObjUid			string
-	First_name  	string
-	Last_name   	string
-	Photo       	string
-	Age       		string
-	City        	string
-	Country     	string
-	Oauth_identity	string
-	Status 			string 	// - src поля Status в профиле (иногда необходимо для доп.фильтрации)
-	Raw	       		[]Data	// объект пользователя (нужен при сборки проекта для данного юзера при добавлении прав на базу)
-	Tables      	[]Data
-	Roles       	map[string]string
-	Homepage		string
-	Maket			string
-	UpdateFlag 		bool
-	UpdateData 		[]Data
-	CurrentRole 	Data
-	CurrentProfile 	Data
-	Navigator   	[]*Items
+	Hash       		string `json:"hash"`
+	Email       	string `json:"email"`
+	Uid         	string `json:"uid"`
+	First_name  	string `json:"first_name"`
+	Last_name   	string `json:"last_name"`
+	Photo       	string `json:"photo"`
+	Age       		string `json:"age"`
+	City        	string `json:"city"`
+	Country     	string `json:"country"`
+	Status 			string `json:"status"` 	// - src поля Status в профиле (иногда необходимо для доп.фильтрации)
+	Raw	       		[]Data `json:"raw"`	// объект пользователя (нужен при сборки проекта для данного юзера при добавлении прав на базу)
+	Tables      	[]Data `json:"tables"`
+	Roles       	[]Data `json:"roles"`
+	Homepage		string `json:"homepage"`
+	Maket			string `json:"maket"`
+	UpdateFlag 		bool `json:"update_flag"`
+	UpdateData 		[]Data `json:"update_data"`
+	CurrentRole 	Data `json:"current_role"`
+	CurrentProfile 	Data `json:" "`
+	Navigator   	[]*Items `json:"navigator"`
 }
 
 
