@@ -4,16 +4,18 @@ type ProfileData struct {
 	Hash       		string
 	Email       	string
 	Uid         	string
+	ObjUid			string
 	First_name  	string
 	Last_name   	string
 	Photo       	string
 	Age       		string
 	City        	string
 	Country     	string
+	Oauth_identity	string
 	Status 			string 	// - src поля Status в профиле (иногда необходимо для доп.фильтрации)
 	Raw	       		[]Data	// объект пользователя (нужен при сборки проекта для данного юзера при добавлении прав на базу)
 	Tables      	[]Data
-	Roles       	[]Data
+	Roles       	map[string]string
 	Homepage		string
 	Maket			string
 	UpdateFlag 		bool
