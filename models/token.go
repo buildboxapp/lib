@@ -10,6 +10,7 @@ type Token struct {
 	Local string
 	Type string
 	Session string
+	SessionRev string	// ревизия текущей сессии (если сессия обновляется (меняется профиль) - ID-сессии остается, но ревизия меняется
 	jwt.StandardClaims
 }
 
