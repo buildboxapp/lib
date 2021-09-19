@@ -1,6 +1,7 @@
 package models
 
 type ProfileData struct {
+	Revision		string `json:"revision"`	// ревизия текущей сессии (если сессия обновляется (меняется профиль) - ID-сессии остается, но ревизия меняется
 	Hash       		string `json:"hash"`
 	Email       	string `json:"email"`
 	Uid         	string `json:"uid"`
