@@ -4,12 +4,14 @@ type ProfileData struct {
 	Hash       		string `json:"hash"`
 	Email       	string `json:"email"`
 	Uid         	string `json:"uid"`
+	ObjUid			string `json:"obj_uid"`
 	First_name  	string `json:"first_name"`
 	Last_name   	string `json:"last_name"`
 	Photo       	string `json:"photo"`
 	Age       		string `json:"age"`
 	City        	string `json:"city"`
 	Country     	string `json:"country"`
+	Oauth_identity	string `json:"oauth_identity"`
 	Status 			string `json:"status"` 	// - src поля Status в профиле (иногда необходимо для доп.фильтрации)
 	Raw	       		[]Data `json:"raw"`	// объект пользователя (нужен при сборки проекта для данного юзера при добавлении прав на базу)
 	Tables      	[]Data `json:"tables"`
