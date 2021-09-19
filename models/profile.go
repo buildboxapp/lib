@@ -6,8 +6,8 @@ type ProfileData struct {
 	Email       	string `json:"email"`
 	Uid         	string `json:"uid"`
 	ObjUid			string `json:"obj_uid"`
-	First_name  	string `json:"first_name"`
-	Last_name   	string `json:"last_name"`
+	FirstName  		string `json:"first_name"`
+	LastName   		string `json:"last_name"`
 	Photo       	string `json:"photo"`
 	Age       		string `json:"age"`
 	City        	string `json:"city"`
