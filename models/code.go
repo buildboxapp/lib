@@ -70,3 +70,29 @@ func (r RestStatus) MarshalJSON() ([]byte, error) {
 	res, err := json.Marshal(n)
 	return res, err
 }
+
+func (r RestStatus) UnmarshalJSON(b []byte) error {
+	type RestStatusJson struct {
+		Description string `json:"description"`
+		Status      int    `json:"status"`
+		Code        string `json:"code"`
+		Error       string `json:"error"`
+	}
+	t := RestStatusJson{}
+
+	err := json.Unmarshal(b, &t)
+	if err != nil {
+		return err
+	}
+
+	r.Description = t.Description
+	r.Code = t.Code
+	r.Status = t.Status
+	if t.Error != "" {
+		r.Error = nil
+	} else {
+		r.Error = fmt.Errorf("%s", t.Error)
+	}
+
+	return nil
+}
